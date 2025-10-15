@@ -64,6 +64,13 @@ function showMedia() {
     loadMedia();
 }
 
+function showStoryGenerator() {
+    hideAllSections();
+    document.getElementById('story-section').style.display = 'block';
+    updateActiveNav('story');
+    loadStoryAdventures();
+}
+
 function hideAllSections() {
     const sections = document.querySelectorAll('.content-section');
     sections.forEach(section => section.style.display = 'none');
@@ -604,4 +611,83 @@ function filterAdventures() {
 
 function refreshAdventures() {
     loadAdventures();
+}
+
+// Story Generator Functions
+async function loadStoryAdventures() {
+    try {
+        showLoading('storyAdventuresList');
+        const response = await fetch(`${API_BASE}/adventures`);
+        const adventures = await response.json();
+        
+        if (response.ok) {
+            displayStoryAdventures(adventures);
+        } else {
+            showError('Failed to load adventures for story generation');
+        }
+    } catch (error) {
+        console.error('Error loading story adventures:', error);
+        showError('Failed to connect to server');
+    }
+}
+
+function displayStoryAdventures(adventures) {
+    const container = document.getElementById('storyAdventuresList');
+    
+    if (!adventures || adventures.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-book-open"></i>
+                <p>No adventures found for story generation</p>
+                <p>Create some adventures first to generate stories!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = adventures.map(adventure => `
+        <div class="adventure-item">
+            <div class="adventure-header">
+                <h6 class="adventure-title">${escapeHtml(adventure.Name)}</h6>
+                <div>
+                    <button class="btn btn-sm btn-primary me-2" onclick="generateStory(${adventure.Id})">
+                        <i class="fas fa-magic me-1"></i>Generate Story
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewAdventure(${adventure.Id})">
+                        <i class="fas fa-eye me-1"></i>View Details
+                    </button>
+                </div>
+            </div>
+            <div class="adventure-stats">
+                <span class="stat-badge">Created: ${formatDate(adventure.CreatedAt)}</span>
+                <span class="stat-badge">Waypoints: ${adventure.Waypoints?.length || 0}</span>
+                <span class="stat-badge">Notes: ${adventure.Notes?.length || 0}</span>
+                <span class="stat-badge">Media: ${adventure.MediaItems?.length || 0}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function generateStory(adventureId) {
+    try {
+        showSuccess('Generating your epic adventure story...');
+        window.open(`/admin/story.html?id=${adventureId}`, '_blank');
+    } catch (error) {
+        console.error('Error generating story:', error);
+        showError('Failed to generate story');
+    }
+}
+
+async function generateRandomStory() {
+    try {
+        showSuccess('Generating a random epic adventure story...');
+        window.open('/admin/story.html', '_blank');
+    } catch (error) {
+        console.error('Error generating random story:', error);
+        showError('Failed to generate random story');
+    }
+}
+
+function openStoryGenerator() {
+    window.open('/admin/story.html', '_blank');
 }

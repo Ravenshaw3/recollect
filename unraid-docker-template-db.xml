@@ -13,7 +13,7 @@
   <Category>Database</Category>
   <WebUI>http://[IP]:[PORT:5432]</WebUI>
   <TemplateURL/>
-  <Icon>https://raw.githubusercontent.com/Ravenshaw3/recollect/main/icons/recollect-db-icon.svg</Icon>
+  <Icon>https://raw.githubusercontent.com/Ravenshaw3/recollect/main/unraid-deployment/icons/recollect-db-icon.svg</Icon>
   <ExtraParams>--restart=unless-stopped</ExtraParams>
   <PostArgs/>
   <CPUset/>

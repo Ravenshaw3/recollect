@@ -1,0 +1,309 @@
+// Android and iOS imports
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.media.MediaRecorder;
+import android.net.Uri;
+import android.os.Bundle;
+import android.provider.MediaStore;
+import android.widget.Toast;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+// Variables
+String adventureName;
+List<LatLng> coordinates = new ArrayList<LatLng>();
+LocationManager locationManager;
+GoogleMap googleMap;
+
+// On create method
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+    locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+    SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+            .findFragmentById(R.id.map);
+    mapFragment.getMapAsync(this);
+}
+
+// On map ready callback
+@Override
+public void onMapReady(GoogleMap googleMap) {
+    this.googleMap = googleMap;
+    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+}
+
+// Location listener
+private final LocationListener locationListener = new LocationListener() {
+    @Override
+    public void onLocationChanged(Location location) {
+        coordinates.add(new LatLng(location.getLatitude(), location.getLongitude()));
+        googleMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
+    }
+};
+
+// Take picture method
+public void takePicture(View view) {
+    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+    }
+}
+
+// Take video method
+public void takeVideo(View view) {
+Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+if (takeVideoIntent.resolveActivity(getPackageManager()) != null) {
+startActivityForResult(takeVideoIntent, REQUEST_VIDEO_CAPTURE);
+}
+}
+
+// On activity result
+@Override
+protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+Bundle extras = data.getExtras();
+Bitmap imageBitmap = (Bitmap) extras.get("data");
+// Save imageBitmap to file and add location metadata
+} else if (requestCode == REQUEST_VIDEO_CAPTURE && resultCode == RESULT_OK) {
+Uri videoUri = data.getData();
+// Save videoUri to file and add location metadata
+}
+}
+
+// Add address method
+public void addAddress(View view) {
+// Allow user to input address and add it to the coordinates list
+}
+
+// Add note method
+
+
+
+
+
+
+public void takeVideo(View view) {
+Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+if (takeVideoIntent.resolveActivity(getPackageManager()) != null) {
+startActivityForResult(takeVideoIntent, REQUEST_VIDEO_CAPTURE);
+}
+}
+
+// On activity result
+@Override
+protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+Bundle extras = data.getExtras();
+Bitmap imageBitmap = (Bitmap) extras.get("data");
+// Save imageBitmap to file and add location metadata
+} else if (requestCode == REQUEST_VIDEO_CAPTURE && resultCode == RESULT_OK) {
+Uri videoUri = data.getData();
+// Save videoUri to file and add location metadata
+}
+}
+
+// Add address method
+public void addAddress(View view) {
+// Allow user to input address and add it to the coordinates list
+}
+
+// Add note method
+public void addNote(View view) {
+// Allow user to input note and add it to the coordinates list
+}
+
+// Label items method
+public void labelItems(View view) {
+// Allow user to label items and securely upload them to the self-hosted server
+}
+
+// Name adventure method
+public void nameAdventure(View view) {
+// Allow user to name the adventure
+}
+
+// Review adventure method
+public void reviewAdventure(View view) {
+// Allow user to view the tracked route along a map view
+}
+
+
+
+
+    Authentication: To protect against unauthorized access to the app, you should implement authentication mechanisms such as a login system. On Android, you can use the Android Keystore system to securely store the user's credentials, while on iOS you can use the Keychain to store the credentials.
+
+    Encryption: To protect the data stored on the phone, you should encrypt the data before storing it. You can use the Android Keystore or iOS Keychain to encrypt the data, or you can use a library such as SQLCipher to encrypt the SQLite database.
+
+    Authorization: To protect against unauthorized access to the data stored on the server, you should implement an authorization mechanism. For example, you can use a token-based system where the server generates a token for the user and the user sends the token with each request to the server. This allows the server to verify that the user is authorized to access the data.
+
+    Transport Layer Security (TLS): To secure the communication between the phone and the server, you should use Transport Layer Security (TLS) to encrypt the data. This ensures that the data cannot be intercepted and read by an attacker. On the server-side, you should use a certificate from a trusted certificate authority (CA) to ensure that the connection is secure. On the client-side, you should validate the server's certificate to ensure that the connection is secure.
+
+    Https: You can use https protocol for the communication between the phone and the server, this way the communication will be encrypted and secure.
+	Using a Virtual Private Network (VPN) between the devices and the server can be a good way to increase security. VPNs allow devices to establish a secure and encrypted connection to the server, which helps to protect the data from being intercepted by an attacker.
+
+Additionally, VPNs can also protect the devices from being tracked or monitored by third-party entities, and can also help to bypass any geographical restrictions that may be in place.
+
+However, it is worth noting that VPNs can add complexity to the system and may impact the performance of the app. Additionally, deploying and maintaining a VPN infrastructure can also add additional cost to the project.
+
+Before deciding to use a VPN, you should consider the specific requirements of the project, and weigh the benefits and costs of using a VPN.
+It is also important to ensure that the VPN solution is properly configured and maintained to avoid security vulnerabilities.
+
+Overall, using a VPN can be an effective way to secure the communication between the devices and the server, but it is important to consider all the factors before deciding to use it.
+
+
+The layout of the phone interface will depend on the specific requirements of the project and the design goals of the app. However, here are a few ideas for layouts that you could use for the phone interface:
+
+    Tabbed layout: You could use a tabbed layout where the user can switch between different sections of the app by tapping on tabs at the bottom of the screen. For example, you could have tabs for "Map View", "Media", "Notes", and "Settings".
+
+    Navigation Drawer: You could use a navigation drawer to allow the user to access different sections of the app by swiping from the left edge of the screen or tapping on the navigation icon.
+
+    Map view: You could use a map view to display the route that the user is tracking. The user could zoom in and out of the map and see markers for each location visited.
+
+    Media view: You could use a media view to display the pictures and videos that the user has taken. The user could swipe through the media to see each item.
+
+    Note view: You could use a note view to display the notes that the user has added. The user could scroll through the notes to see each item.
+
+    Settings view: You could use a settings view to allow the user to configure the app. The user could turn on/off certain features and change the settings.
+
+Here is an example of the code that you could use to create a simple layout with a tabbed interface:
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:id="@+id/content_frame"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- Your map view, media view, note view, etc. goes here -->
+
+    </FrameLayout>
+
+    <android.support.design.widget.BottomNavigationView
+        android:id="@+id/navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:menu="@menu/navigation" />
+
+</LinearLayout>
+
+
+
+
+
+Sure, here's an example of how you could create a simple layout for an iOS app that has a similar functionality to the one you described:
+
+import UIKit
+import MapKit
+
+class ViewController: UIViewController {
+    let mapView = MKMapView()
+    let mediaCollectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+    let notesTableView = UITableView()
+    let settingsView = UIView()
+    let segmentedControl = UISegmentedControl()
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        // Add map view, media collection view, notes table view, and settings view as subviews
+        
+        // Add segmented control to switch between views
+        segmentedControl.insertSegment(withTitle: "Map", at: 0, animated: false)
+        segmentedControl.insertSegment(withTitle: "Media", at: 1, animated: false)
+        segmentedControl.insertSegment(withTitle: "Notes", at: 2, animated: false)
+        segmentedControl.insertSegment(withTitle: "Settings", at: 3, animated: false)
+        segmentedControl.selectedSegmentIndex = 0
+        segmentedControl.addTarget(self, action: #selector(changeView), for: .valueChanged)
+        
+        // Add segmented control to the view
+        view.addSubview(segmentedControl)
+        
+        // Add constraints to the segmented control
+        segmentedControl.translatesAutoresizingMaskIntoConstraints = false
+        segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        segmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        segmentedControl.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+    }
+    
+    @objc func changeView() {
+        switch segmentedControl.selectedSegmentIndex {
+        case 0:
+            // Show map view
+            mapView.isHidden = false
+            mediaCollectionView.isHidden = true
+            notesTableView.isHidden = true
+            settingsView.isHidden = true
+        case 1:
+            // Show media collection view
+            mapView.isHidden = true
+            mediaCollectionView.isHidden = false
+            notesTableView.isHidden = true
+            settingsView.isHidden = true
+        case 2:
+            // Show notes table view
+            mapView.isHidden = true
+            mediaCollectionView.isHidden = true
+            notesTableView.isHidden = false
+            settingsView.isHidden = true
+        case 3:
+            // Show settings view
+            mapView.isHidden = true
+            mediaCollectionView.isHidden = true
+            notesTableView.isHidden = true
+            settingsView.isHidden = false
+        default:
+            break
+        }
+    }
+}
+
+
+SERVER
+
+Here is an example of how you could code a server to receive and store the information for easy retrieval, using a popular web framework such as Flask for Python and running it in a Docker container:
+
+from flask import Flask, request, jsonify
+import os
+import json
+
+app = Flask(__name__)
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    # Retrieve the data from the request
+    data = request.get_json()
+
+    # Extract the necessary information
+    adventure_name = data['adventure_name']
+    coordinates = data['coordinates']
+    media = data['media']
+    notes = data['notes']
+
+    # Save the data to a database
+    save_to_database(adventure_name, coordinates, media, notes)
+
+    # Return a success response
+    return jsonify(success=True)
+
+def save_to_database(adventure_name, coordinates, media, notes):
+    # Connect to the database
+    # Code to save the data to the database goes here
+
+if __name__ == '__main__':
+    app.run(host='0.0

@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>Recollect-API</Name>
+  <Repository>recollect-api:latest</Repository>
+  <Registry/>
+  <Network>bridge</Network>
+  <MyIP>192.168.1.100</MyIP>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/your-repo/recollect</Support>
+  <Project>https://github.com/your-repo/recollect</Project>
+  <Overview>Recollect Adventure Tracking API with Admin Dashboard</Overview>
+  <Category>Network:WebServer</Category>
+  <WebUI>http://[IP]:[PORT:7001]/admin</WebUI>
+  <TemplateURL/>
+  <Icon>https://raw.githubusercontent.com/your-repo/recollect/main/icons/recollect-api-icon.svg</Icon>
+  <ExtraParams>--restart=unless-stopped</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled>2025-01-14T00:00:00-00:00</DateInstalled>
+  <DateUpdated>2025-01-14T00:00:00-00:00</DateUpdated>
+  <DonateText/>
+  <DonateLink/>
+  <Description>Recollect Adventure Tracking API with comprehensive admin dashboard for managing adventures, waypoints, notes, and media.</Description>
+  <Networking>
+    <Mode>bridge</Mode>
+    <Publish>
+      <Port>
+        <HostPort>7001</HostPort>
+        <ContainerPort>80</ContainerPort>
+        <Protocol>tcp</Protocol>
+      </Port>
+      <Port>
+        <HostPort>7002</HostPort>
+        <ContainerPort>443</ContainerPort>
+        <Protocol>tcp</Protocol>
+      </Port>
+    </Publish>
+  </Networking>
+  <Data>
+    <Volume>
+      <HostDir>/mnt/user/appdata/recollect</HostDir>
+      <ContainerDir>/app/data</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+  </Data>
+  <Environment>
+    <Variable>
+      <Value>Production</Value>
+      <Mode/>
+      <Name>ASPNETCORE_ENVIRONMENT</Name>
+      <Description>Environment (Production/Development)</Description>
+    </Variable>
+    <Variable>
+      <Value>Host=recollect-db;Database=Recollect;Username=postgres;Password=secret</Value>
+      <Mode/>
+      <Name>ConnectionStrings__DefaultConnection</Name>
+      <Description>Database connection string</Description>
+    </Variable>
+  </Environment>
+  <Labels/>
+  <Config Name="ASPNETCORE_ENVIRONMENT" Target="ASPNETCORE_ENVIRONMENT" Default="Production" Mode="" Description="Environment (Production/Development)" Type="Variable" Display="always" Required="true" Mask="false">Production</Config>
+  <Config Name="ConnectionStrings__DefaultConnection" Target="ConnectionStrings__DefaultConnection" Default="Host=recollect-db;Database=Recollect;Username=postgres;Password=secret" Mode="" Description="Database connection string" Type="Variable" Display="always" Required="true" Mask="false">Host=recollect-db;Database=Recollect;Username=postgres;Password=secret</Config>
+  <Config Name="Port 7001" Target="7001" Default="7001" Mode="tcp" Description="HTTP Port" Type="Port" Display="always" Required="true" Mask="false">7001</Config>
+  <Config Name="Port 7002" Target="7002" Default="7002" Mode="tcp" Description="HTTPS Port" Type="Port" Display="always" Required="true" Mask="false">7002</Config>
+  <Config Name="Data Directory" Target="/app/data" Default="/mnt/user/appdata/recollect" Mode="rw" Description="Data directory for file storage" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/recollect</Config>
+</Container>

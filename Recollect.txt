@@ -1,0 +1,25 @@
+Recollect/
+├── Recollect.Mobile/          # MAUI app
+│   ├── Recollect.Mobile.csproj
+│   ├── MauiProgram.cs
+│   ├── Platforms/              # Android/iOS specifics
+│   │   └── Android/AndroidManifest.xml
+│   ├── Models/                 # Shared data
+│   │   └── Adventure.cs
+│   ├── Services/               # GPS, media, API
+│   │   ├── LocationService.cs
+│   │   └── ApiService.cs
+│   ├── Pages/                  # UI pages
+│   │   ├── MainPage.xaml      # Tabbed shell
+│   │   ├── MainPage.xaml.cs
+│   │   ├── MapPage.xaml
+│   │   └── MapPage.xaml.cs
+│   └── App.xaml.cs
+├── Recollect.Api/              # Backend
+│   ├── Recollect.Api.csproj
+│   ├── Program.cs
+│   ├── Controllers/AdventuresController.cs
+│   ├── Models/AdventureDto.cs  # API shapes
+│   └── Dockerfile
+├── docker-compose.yml          # Local stack (API + Postgres)
+└── Recollect.sln               # Solution file

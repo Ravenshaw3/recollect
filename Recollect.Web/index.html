@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recollect - Adventure Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #f0f0f0;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .adventure-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .adventure-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .adventure-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .adventure-item h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .adventure-item p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .location-display {
+            background: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .location-display h4 {
+            color: #0066cc;
+            margin-bottom: 10px;
+        }
+
+        .coordinates {
+            font-family: monospace;
+            background: #e6f3ff;
+            padding: 8px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗺️ Recollect</h1>
+            <p>Track your adventures and capture memories</p>
+        </div>
+
+        <div class="content">
+            <!-- Location Tracking Section -->
+            <div class="section">
+                <h2>📍 Location Tracking</h2>
+                <div class="location-display" id="locationDisplay" style="display: none;">
+                    <h4>Current Location:</h4>
+                    <div class="coordinates" id="coordinates">Getting location...</div>
+                </div>
+                <button class="btn" onclick="startLocationTracking()">Start Tracking</button>
+                <button class="btn" onclick="stopLocationTracking()">Stop Tracking</button>
+                <button class="btn" onclick="getCurrentLocation()">Get Current Location</button>
+            </div>
+
+            <!-- Adventure Management -->
+            <div class="section">
+                <h2>🎯 Adventure Management</h2>
+                <div class="input-group">
+                    <label for="adventureName">Adventure Name:</label>
+                    <input type="text" id="adventureName" placeholder="Enter adventure name...">
+                </div>
+                <button class="btn" onclick="createAdventure()">Create New Adventure</button>
+                <button class="btn" onclick="loadAdventures()">Load Adventures</button>
+            </div>
+
+            <!-- Notes Section -->
+            <div class="section">
+                <h2>📝 Notes</h2>
+                <div class="input-group">
+                    <label for="noteTitle">Note Title:</label>
+                    <input type="text" id="noteTitle" placeholder="Enter note title...">
+                </div>
+                <div class="input-group">
+                    <label for="noteContent">Note Content:</label>
+                    <textarea id="noteContent" rows="4" placeholder="Enter your note..."></textarea>
+                </div>
+                <button class="btn" onclick="addNote()">Add Note</button>
+            </div>
+
+            <!-- Media Section -->
+            <div class="section">
+                <h2>📸 Media</h2>
+                <input type="file" id="mediaInput" accept="image/*,video/*" style="margin-bottom: 15px;">
+                <button class="btn" onclick="capturePhoto()">Capture Photo</button>
+                <button class="btn" onclick="uploadMedia()">Upload Media</button>
+            </div>
+
+            <!-- Status Display -->
+            <div id="status"></div>
+
+            <!-- Adventures List -->
+            <div class="section">
+                <h2>🗂️ Your Adventures</h2>
+                <div class="adventure-list" id="adventuresList">
+                    <p>No adventures yet. Create one to get started!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentAdventure = null;
+        let locationWatchId = null;
+        let currentLocation = null;
+
+        // Location tracking functions
+        function getCurrentLocation() {
+            if (!navigator.geolocation) {
+                showStatus('Geolocation is not supported by this browser.', 'error');
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    currentLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy,
+                        timestamp: new Date(position.timestamp)
+                    };
+                    displayLocation(currentLocation);
+                    showStatus('Location obtained successfully!', 'success');
+                },
+                (error) => {
+                    showStatus('Error getting location: ' + error.message, 'error');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                }
+            );
+        }
+
+        function startLocationTracking() {
+            if (!navigator.geolocation) {
+                showStatus('Geolocation is not supported by this browser.', 'error');
+                return;
+            }
+
+            locationWatchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    currentLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy,
+                        timestamp: new Date(position.timestamp)
+                    };
+                    displayLocation(currentLocation);
+                },
+                (error) => {
+                    showStatus('Location tracking error: ' + error.message, 'error');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                }
+            );
+            showStatus('Location tracking started!', 'success');
+        }
+
+        function stopLocationTracking() {
+            if (locationWatchId) {
+                navigator.geolocation.clearWatch(locationWatchId);
+                locationWatchId = null;
+                showStatus('Location tracking stopped.', 'success');
+            }
+        }
+
+        function displayLocation(location) {
+            const locationDisplay = document.getElementById('locationDisplay');
+            const coordinates = document.getElementById('coordinates');
+            
+            coordinates.innerHTML = `
+                <strong>Latitude:</strong> ${location.latitude.toFixed(6)}<br>
+                <strong>Longitude:</strong> ${location.longitude.toFixed(6)}<br>
+                <strong>Accuracy:</strong> ${location.accuracy.toFixed(0)}m<br>
+                <strong>Time:</strong> ${location.timestamp.toLocaleString()}
+            `;
+            locationDisplay.style.display = 'block';
+        }
+
+        // Adventure management functions
+        function createAdventure() {
+            const name = document.getElementById('adventureName').value.trim();
+            if (!name) {
+                showStatus('Please enter an adventure name.', 'error');
+                return;
+            }
+
+            const adventure = {
+                name: name,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                waypoints: [],
+                notes: [],
+                mediaItems: []
+            };
+
+            // Save to localStorage for now
+            const adventures = JSON.parse(localStorage.getItem('adventures') || '[]');
+            adventure.id = adventures.length + 1;
+            adventures.push(adventure);
+            localStorage.setItem('adventures', JSON.stringify(adventures));
+
+            currentAdventure = adventure;
+            showStatus(`Adventure "${name}" created successfully!`, 'success');
+            document.getElementById('adventureName').value = '';
+            loadAdventures();
+        }
+
+        function loadAdventures() {
+            const adventures = JSON.parse(localStorage.getItem('adventures') || '[]');
+            const adventuresList = document.getElementById('adventuresList');
+            
+            if (adventures.length === 0) {
+                adventuresList.innerHTML = '<p>No adventures yet. Create one to get started!</p>';
+                return;
+            }
+
+            adventuresList.innerHTML = adventures.map(adventure => `
+                <div class="adventure-item">
+                    <h3>${adventure.name}</h3>
+                    <p>Created: ${new Date(adventure.createdAt).toLocaleString()}</p>
+                    <p>Waypoints: ${adventure.waypoints.length} | Notes: ${adventure.notes.length} | Media: ${adventure.mediaItems.length}</p>
+                    <button class="btn" onclick="selectAdventure(${adventure.id})">Select</button>
+                </div>
+            `).join('');
+        }
+
+        function selectAdventure(id) {
+            const adventures = JSON.parse(localStorage.getItem('adventures') || '[]');
+            currentAdventure = adventures.find(a => a.id === id);
+            showStatus(`Selected adventure: ${currentAdventure.name}`, 'success');
+        }
+
+        // Notes functions
+        function addNote() {
+            if (!currentAdventure) {
+                showStatus('Please create or select an adventure first.', 'error');
+                return;
+            }
+
+            const title = document.getElementById('noteTitle').value.trim();
+            const content = document.getElementById('noteContent').value.trim();
+
+            if (!title || !content) {
+                showStatus('Please enter both title and content.', 'error');
+                return;
+            }
+
+            const note = {
+                id: Date.now(),
+                title: title,
+                content: content,
+                timestamp: new Date().toISOString(),
+                latitude: currentLocation?.latitude || null,
+                longitude: currentLocation?.longitude || null
+            };
+
+            currentAdventure.notes.push(note);
+            saveAdventure();
+            
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('noteContent').value = '';
+            showStatus('Note added successfully!', 'success');
+        }
+
+        // Media functions
+        function capturePhoto() {
+            const input = document.getElementById('mediaInput');
+            input.click();
+        }
+
+        function uploadMedia() {
+            const input = document.getElementById('mediaInput');
+            const file = input.files[0];
+            
+            if (!file) {
+                showStatus('Please select a file first.', 'error');
+                return;
+            }
+
+            if (!currentAdventure) {
+                showStatus('Please create or select an adventure first.', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const mediaItem = {
+                    id: Date.now(),
+                    filePath: e.target.result,
+                    thumbnailPath: e.target.result,
+                    caption: file.name,
+                    type: file.type.startsWith('image/') ? 'image' : 'video',
+                    timestamp: new Date().toISOString(),
+                    latitude: currentLocation?.latitude || null,
+                    longitude: currentLocation?.longitude || null
+                };
+
+                currentAdventure.mediaItems.push(mediaItem);
+                saveAdventure();
+                showStatus('Media uploaded successfully!', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveAdventure() {
+            if (!currentAdventure) return;
+
+            const adventures = JSON.parse(localStorage.getItem('adventures') || '[]');
+            const index = adventures.findIndex(a => a.id === currentAdventure.id);
+            if (index !== -1) {
+                adventures[index] = currentAdventure;
+                localStorage.setItem('adventures', JSON.stringify(adventures));
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.innerHTML = `<div class="status ${type}">${message}</div>`;
+            setTimeout(() => {
+                status.innerHTML = '';
+            }, 5000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAdventures();
+            showStatus('Recollect Web App loaded successfully!', 'success');
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="Recollect.Mobile.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Recollect.Mobile"
+    xmlns:pages="clr-namespace:Recollect.Mobile.Pages"
+    Title="Recollect">
+
+    <TabBar>
+        <ShellContent Title="Test" Icon="map.png" ContentTemplate="{DataTemplate pages:TestPage}" />
+        <ShellContent Title="Map" Icon="map.png" ContentTemplate="{DataTemplate pages:MapPage}" />
+        <ShellContent Title="Media" Icon="camera.png" ContentTemplate="{DataTemplate pages:MediaPage}" />
+        <ShellContent Title="Notes" Icon="note.png" ContentTemplate="{DataTemplate pages:NotesPage}" />
+        <ShellContent Title="Review" Icon="review.png" ContentTemplate="{DataTemplate pages:ReviewPage}" />
+    </TabBar>
+
+</Shell>

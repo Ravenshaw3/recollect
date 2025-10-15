@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Recollect.Mobile.Pages.MapPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
+             Title="Route Map">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+    
+        <maps:Map x:Name="AdventureMap" IsShowingUser="True" Grid.Row="0" />
+    
+        <StackLayout Grid.Row="1" Orientation="Horizontal" HorizontalOptions="Center" Margin="10">
+            <Button Text="Start Tracking" Clicked="OnStartClicked" Margin="5" />
+            <Button Text="Stop Tracking" Clicked="OnStopClicked" Margin="5" />
+            <Button Text="Snap Photo" Clicked="OnPhotoClicked" Margin="5" />
+        </StackLayout>
+    </Grid>  
+</ContentPage>

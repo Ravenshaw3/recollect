@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>Recollect-Database</Name>
+  <Repository>postgres:16</Repository>
+  <Registry>https://hub.docker.com/</Registry>
+  <Network>bridge</Network>
+  <MyIP>192.168.1.101</MyIP>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://www.postgresql.org/</Support>
+  <Project>https://www.postgresql.org/</Project>
+  <Overview>PostgreSQL Database for Recollect API</Overview>
+  <Category>Database</Category>
+  <WebUI>http://[IP]:[PORT:5432]</WebUI>
+  <TemplateURL/>
+  <Icon>https://raw.githubusercontent.com/your-repo/recollect/main/icons/recollect-db-icon.svg</Icon>
+  <ExtraParams>--restart=unless-stopped</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled>2025-01-14T00:00:00-00:00</DateInstalled>
+  <DateUpdated>2025-01-14T00:00:00-00:00</DateUpdated>
+  <DonateText/>
+  <DonateLink/>
+  <Description>PostgreSQL database for the Recollect Adventure Tracking API.</Description>
+  <Networking>
+    <Mode>bridge</Mode>
+    <Publish>
+      <Port>
+        <HostPort>5432</HostPort>
+        <ContainerPort>5432</ContainerPort>
+        <Protocol>tcp</Protocol>
+      </Port>
+    </Publish>
+  </Networking>
+  <Data>
+    <Volume>
+      <HostDir>/mnt/user/appdata/recollect-db</HostDir>
+      <ContainerDir>/var/lib/postgresql/data</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+  </Data>
+  <Environment>
+    <Variable>
+      <Value>Recollect</Value>
+      <Mode/>
+      <Name>POSTGRES_DB</Name>
+      <Description>Database name</Description>
+    </Variable>
+    <Variable>
+      <Value>postgres</Value>
+      <Mode/>
+      <Name>POSTGRES_USER</Name>
+      <Description>Database username</Description>
+    </Variable>
+    <Variable>
+      <Value>secret</Value>
+      <Mode/>
+      <Name>POSTGRES_PASSWORD</Name>
+      <Description>Database password</Description>
+    </Variable>
+  </Environment>
+  <Labels/>
+  <Config Name="POSTGRES_DB" Target="POSTGRES_DB" Default="Recollect" Mode="" Description="Database name" Type="Variable" Display="always" Required="true" Mask="false">Recollect</Config>
+  <Config Name="POSTGRES_USER" Target="POSTGRES_USER" Default="postgres" Mode="" Description="Database username" Type="Variable" Display="always" Required="true" Mask="false">postgres</Config>
+  <Config Name="POSTGRES_PASSWORD" Target="POSTGRES_PASSWORD" Default="secret" Mode="" Description="Database password" Type="Variable" Display="always" Required="true" Mask="false">secret</Config>
+  <Config Name="Port 5432" Target="5432" Default="5432" Mode="tcp" Description="Database Port" Type="Port" Display="always" Required="true" Mask="false">5432</Config>
+  <Config Name="Database Directory" Target="/var/lib/postgresql/data" Default="/mnt/user/appdata/recollect-db" Mode="rw" Description="Database data directory" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/recollect-db</Config>
+</Container>

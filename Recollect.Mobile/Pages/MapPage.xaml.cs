@@ -1,0 +1,129 @@
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Maps;
+using Recollect.Mobile.Models;
+using Recollect.Mobile.Services;
+using System.Collections.Specialized;
+using System.Linq;
+
+namespace Recollect.Mobile.Pages;
+
+public partial class MapPage : ContentPage
+{
+    private readonly LocationService _locationService;
+    private readonly AdventureService _adventureService;
+    private Polyline _routeLine;
+
+    public MapPage(LocationService locationService, AdventureService adventureService)
+    {
+        try
+        {
+            InitializeComponent();
+            _locationService = locationService;
+            _adventureService = adventureService;
+            BindingContext = _adventureService.CurrentAdventure;
+            
+            // Initialize route line safely
+            _routeLine = new Polyline 
+            { 
+                StrokeColor = Colors.Blue, 
+                StrokeWidth = 5 
+            };
+            
+            // Add route line to map safely
+            if (AdventureMap?.MapElements != null)
+            {
+                AdventureMap.MapElements.Add(_routeLine);
+            }
+            
+            // Subscribe to waypoints changes safely
+            if (_adventureService?.CurrentAdventure?.Waypoints != null)
+            {
+                _adventureService.CurrentAdventure.Waypoints.CollectionChanged += OnWaypointsChanged;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"MapPage initialization failed: {ex.Message}");
+            // Ensure we have a valid state even if initialization fails
+            _routeLine = new Polyline { StrokeColor = Colors.Blue, StrokeWidth = 5 };
+        }
+    }
+
+    private void OnWaypointsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        try
+        {
+            if (_adventureService?.CurrentAdventure?.Waypoints == null || _adventureService.CurrentAdventure.Waypoints.Count < 2) 
+                return;
+
+            var locations = _adventureService.CurrentAdventure.Waypoints
+                .Where(w => w != null && w.Latitude != 0 && w.Longitude != 0)
+                .Select(w => new Microsoft.Maui.Devices.Sensors.Location(w.Latitude, w.Longitude))
+                .ToList();
+            
+            if (locations.Any() && _routeLine?.Geopath != null)
+            {
+                // Clear existing geopath and add new locations
+                _routeLine.Geopath.Clear();
+                foreach (var location in locations)
+                {
+                    _routeLine.Geopath.Add(location);
+                }
+
+                if (AdventureMap != null)
+                {
+                    var lastLocation = locations.Last();
+                    AdventureMap.MoveToRegion(Microsoft.Maui.Maps.MapSpan.FromCenterAndRadius(lastLocation, Microsoft.Maui.Maps.Distance.FromKilometers(1)));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"OnWaypointsChanged error: {ex.Message}");
+        }
+    }
+
+    private async void OnStartClicked(object sender, EventArgs e)
+    {
+        // Check if we need to start a new adventure
+        if (!_adventureService.HasCurrentAdventure)
+        {
+            var adventureName = await DisplayPromptAsync("New Adventure", "Enter a name for your adventure:", "Start", "Cancel");
+            if (!string.IsNullOrWhiteSpace(adventureName))
+            {
+                await _adventureService.StartNewAdventureAsync(adventureName);
+                // Save the adventure to get an ID
+                await _adventureService.SaveCurrentAdventureAsync();
+            }
+            else
+            {
+                return; // User cancelled
+            }
+        }
+        
+        await _locationService.StartTrackingAsync(_adventureService.CurrentAdventure.Waypoints);
+    }
+
+    private async void OnStopClicked(object sender, EventArgs e)
+    {
+        await _locationService.StopTrackingAsync();
+    }
+
+    private async void OnPhotoClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            var photo = await MediaPicker.Default.CapturePhotoAsync();
+            if (photo != null)
+            {
+                var waypoint = _adventureService.CurrentAdventure.Waypoints.LastOrDefault();
+                if (waypoint != null) waypoint.MediaUri = photo.FullPath;
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle camera permission or other errors
+            await DisplayAlert("Error", $"Failed to capture photo: {ex.Message}", "OK");
+        }
+    }
+}

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Recollect.Mobile.Pages.MediaPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Media Gallery">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
+        <CollectionView x:Name="MediaCollection" 
+                       Grid.Row="0"
+                       ItemsSource="{Binding MediaItems}"
+                       SelectionMode="Single">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="2" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="5">
+                        <Frame BackgroundColor="LightGray" 
+                               CornerRadius="8" 
+                               Padding="5">
+                            <Grid>
+                                <Image Source="{Binding ThumbnailPath}" 
+                                       Aspect="AspectFill"
+                                       HeightRequest="120" />
+                                <Label Text="{Binding Caption}" 
+                                       FontSize="12" 
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="End"
+                                       BackgroundColor="Black"
+                                       TextColor="White"
+                                       Margin="0,0,0,5" />
+                            </Grid>
+                        </Frame>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        
+        <StackLayout Grid.Row="1" 
+                     Orientation="Horizontal" 
+                     HorizontalOptions="Center" 
+                     Margin="10">
+            <Button Text="Take Photo" 
+                    Clicked="OnTakePhotoClicked" 
+                    Margin="5" />
+            <Button Text="Record Video" 
+                    Clicked="OnRecordVideoClicked" 
+                    Margin="5" />
+            <Button Text="Select from Gallery" 
+                    Clicked="OnSelectFromGalleryClicked" 
+                    Margin="5" />
+        </StackLayout>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  recollect-database:
+    image: postgres:16
+    container_name: Recollect-Database
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: Recollect
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - /mnt/user/appdata/recollect-db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - recollect-network
+
+  recollect-api:
+    image: recollect-api:latest
+    container_name: Recollect-API
+    restart: unless-stopped
+    depends_on:
+      - recollect-database
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:80
+      ConnectionStrings__DefaultConnection: Host=recollect-database;Database=Recollect;Username=postgres;Password=secret
+    volumes:
+      - /mnt/user/appdata/recollect:/app/data
+    ports:
+      - "7001:80"
+    networks:
+      - recollect-network
+
+networks:
+  recollect-network:
+    driver: bridge

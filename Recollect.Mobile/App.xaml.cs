@@ -37,7 +37,24 @@ public partial class App : Application
             if (scope?.ServiceProvider != null)
             {
                 var context = scope.ServiceProvider.GetRequiredService<RecollectDbContext>();
-                await context.Database.EnsureCreatedAsync();
+                // Persist data across app updates: apply migrations if present, otherwise ensure created
+                try
+                {
+                    var pending = await context.Database.GetPendingMigrationsAsync();
+                    if (pending.Any())
+                    {
+                        await context.Database.MigrateAsync();
+                    }
+                    else
+                    {
+                        await context.Database.EnsureCreatedAsync();
+                    }
+                }
+                catch
+                {
+                    // Fallback to EnsureCreated if migrations API fails for any reason
+                    await context.Database.EnsureCreatedAsync();
+                }
             }
         }
         catch (Exception ex)

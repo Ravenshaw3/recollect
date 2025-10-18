@@ -8,8 +8,8 @@ namespace Recollect.Mobile.Pages;
 
 public partial class ReviewPage : ContentPage
 {
-    private readonly ApiService _apiService;
-    private readonly AdventureService _adventureService;
+    private ApiService? _apiService;
+    private AdventureService? _adventureService;
 
     public string AdventureName { get; set; } = "My Adventure";
     public string AdventureSummary { get; set; } = "Tracked route with photos and notes";
@@ -17,33 +17,44 @@ public partial class ReviewPage : ContentPage
     public string Distance { get; set; } = "0.0";
     public string Duration { get; set; } = "0:00";
 
-    public ReviewPage(ApiService apiService, AdventureService adventureService)
+    public ReviewPage()
     {
         InitializeComponent();
-        _apiService = apiService;
-        _adventureService = adventureService;
         BindingContext = this;
-        
+    }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        if (_apiService == null || _adventureService == null)
+        {
+            var sp = Handler?.MauiContext?.Services;
+            _apiService ??= sp?.GetService<ApiService>();
+            _adventureService ??= sp?.GetService<AdventureService>();
+        }
         LoadAdventureData();
     }
 
     private void LoadAdventureData()
     {
         // In a real app, this would load from local storage or database
-        WaypointCount = _adventureService.CurrentAdventure.Waypoints.Count;
-        AdventureName = _adventureService.CurrentAdventure.Name;
-        
-        // Calculate distance (simplified)
-        if (_adventureService.CurrentAdventure.Waypoints.Count > 1)
+        if (_adventureService?.CurrentAdventure != null)
         {
-            double totalDistance = 0;
-            for (int i = 1; i < _adventureService.CurrentAdventure.Waypoints.Count; i++)
+            WaypointCount = _adventureService.CurrentAdventure.Waypoints.Count;
+            AdventureName = _adventureService.CurrentAdventure.Name;
+            
+            // Calculate distance (simplified)
+            if (_adventureService.CurrentAdventure.Waypoints.Count > 1)
             {
-                var prev = _adventureService.CurrentAdventure.Waypoints[i - 1];
-                var curr = _adventureService.CurrentAdventure.Waypoints[i];
-                totalDistance += CalculateDistance(prev.Latitude, prev.Longitude, curr.Latitude, curr.Longitude);
+                double totalDistance = 0;
+                for (int i = 1; i < _adventureService.CurrentAdventure.Waypoints.Count; i++)
+                {
+                    var prev = _adventureService.CurrentAdventure.Waypoints[i - 1];
+                    var curr = _adventureService.CurrentAdventure.Waypoints[i];
+                    totalDistance += CalculateDistance(prev.Latitude, prev.Longitude, curr.Latitude, curr.Longitude);
+                }
+                Distance = totalDistance.ToString("F2");
             }
-            Distance = totalDistance.ToString("F2");
         }
     }
 
@@ -74,14 +85,21 @@ public partial class ReviewPage : ContentPage
     {
         try
         {
-            var success = await _apiService.UploadAdventureAsync(_adventureService.CurrentAdventure);
-            if (success)
+            if (_apiService != null && _adventureService?.CurrentAdventure != null)
             {
-                await DisplayAlert("Success", "Adventure uploaded to server!", "OK");
+                var success = await _apiService.UploadAdventureAsync(_adventureService.CurrentAdventure);
+                if (success)
+                {
+                    await DisplayAlert("Success", "Adventure uploaded to server!", "OK");
+                }
+                else
+                {
+                    await DisplayAlert("Error", "Failed to upload adventure. Please try again.", "OK");
+                }
             }
             else
             {
-                await DisplayAlert("Error", "Failed to upload adventure. Please try again.", "OK");
+                await DisplayAlert("Error", "Services not available. Please restart the app.", "OK");
             }
         }
         catch (Exception ex)

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Recollect.Mobile.Pages.SettingsPage"
+             Title="Settings">
+    <ScrollView>
+        <StackLayout Padding="20" Spacing="20">
+            
+            <!-- API Configuration Section -->
+            <Frame BackgroundColor="LightGray" CornerRadius="8" Padding="15">
+                <StackLayout>
+                    <Label Text="API Configuration" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           Margin="0,0,0,10"/>
+                    
+                    <Label Text="Select how to connect to the backend:" 
+                           FontSize="14" 
+                           Margin="0,0,0,10"/>
+                    
+                    <Picker x:Name="ApiConfigurationPicker" 
+                            Title="Select API Configuration"
+                            SelectedIndexChanged="OnApiConfigurationChanged">
+                        <Picker.Items>
+                            <x:String>local</x:String>
+                            <x:String>tailscale</x:String>
+                            <x:String>production</x:String>
+                            <x:String>cloudflare</x:String>
+                        </Picker.Items>
+                    </Picker>
+                    
+                    <Label x:Name="CurrentApiUrlLabel" 
+                           Text="Current API URL: Loading..." 
+                           FontSize="12" 
+                           TextColor="Gray" 
+                           Margin="0,10,0,0"/>
+                </StackLayout>
+            </Frame>
+            
+            <!-- Connection Test Section -->
+            <Frame BackgroundColor="LightBlue" CornerRadius="8" Padding="15">
+                <StackLayout>
+                    <Label Text="Connection Test" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           Margin="0,0,0,10"/>
+                    
+                    <Button Text="Test Connection" 
+                            Clicked="OnTestConnectionClicked" 
+                            BackgroundColor="Blue" 
+                            TextColor="White"/>
+                    
+                    <Label x:Name="ConnectionStatusLabel" 
+                           Text="Ready to test connection" 
+                           FontSize="14" 
+                           Margin="0,10,0,0"/>
+                </StackLayout>
+            </Frame>
+            
+            <!-- Advanced Settings -->
+            <Frame BackgroundColor="LightYellow" CornerRadius="8" Padding="15">
+                <StackLayout>
+                    <Label Text="Advanced Settings" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           Margin="0,0,0,10"/>
+                    
+                    <Entry x:Name="CustomApiUrlEntry" 
+                           Placeholder="Enter custom API URL" 
+                           Margin="0,0,0,10"/>
+                    
+                    <Button Text="Use Custom URL" 
+                            Clicked="OnUseCustomUrlClicked" 
+                            BackgroundColor="Orange" 
+                            TextColor="White"/>
+                </StackLayout>
+            </Frame>
+            
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

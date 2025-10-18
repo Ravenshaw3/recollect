@@ -43,6 +43,24 @@ public class AdventuresController : ControllerBase
         }
     }
 
+    [HttpPost("create")]
+    public async Task<IActionResult> Create([FromBody] AdventureDto dto)
+    {
+        if (dto == null || string.IsNullOrWhiteSpace(dto.Name))
+        {
+            return BadRequest(new { Success = false, Error = "Invalid adventure" });
+        }
+        var adv = new AdventureDto
+        {
+            Name = dto.Name,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        _context.Adventures.Add(adv);
+        await _context.SaveChangesAsync();
+        return Ok(new { Success = true, Id = adv.Id });
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetAdventure(int id)
     {

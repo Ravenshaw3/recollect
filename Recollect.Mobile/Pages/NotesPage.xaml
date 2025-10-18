@@ -2,6 +2,8 @@
 <ContentPage x:Class="Recollect.Mobile.Pages.NotesPage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:Recollect.Mobile.Models"
+             xmlns:pages="clr-namespace:Recollect.Mobile.Pages"
              Title="Notes">
     
     <Grid>
@@ -13,9 +15,10 @@
         <CollectionView x:Name="NotesCollection" 
                        Grid.Row="0"
                        ItemsSource="{Binding Notes}"
-                       SelectionMode="Single">
+                       SelectionMode="Single"
+                       x:DataType="pages:NotesPage">
             <CollectionView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="models:Note">
                     <Frame BackgroundColor="White" 
                            CornerRadius="8" 
                            Padding="15" 

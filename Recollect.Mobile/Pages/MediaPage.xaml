@@ -2,6 +2,8 @@
 <ContentPage x:Class="Recollect.Mobile.Pages.MediaPage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:Recollect.Mobile.Models"
+             xmlns:pages="clr-namespace:Recollect.Mobile.Pages"
              Title="Media Gallery">
     
     <Grid>
@@ -13,12 +15,13 @@
         <CollectionView x:Name="MediaCollection" 
                        Grid.Row="0"
                        ItemsSource="{Binding MediaItems}"
-                       SelectionMode="Single">
+                       SelectionMode="Single"
+                       x:DataType="pages:MediaPage">
             <CollectionView.ItemsLayout>
                 <GridItemsLayout Orientation="Vertical" Span="2" />
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="models:MediaItem">
                     <Grid Padding="5">
                         <Frame BackgroundColor="LightGray" 
                                CornerRadius="8" 
@@ -51,8 +54,11 @@
             <Button Text="Record Video" 
                     Clicked="OnRecordVideoClicked" 
                     Margin="5" />
-            <Button Text="Select from Gallery" 
+            <Button Text="Gallery" 
                     Clicked="OnSelectFromGalleryClicked" 
+                    Margin="5" />
+            <Button Text="Upload Audio" 
+                    Clicked="OnUploadAudioClicked"
                     Margin="5" />
         </StackLayout>
     </Grid>

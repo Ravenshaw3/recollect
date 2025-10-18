@@ -9,19 +9,15 @@ namespace Recollect.Mobile.Pages;
 
 public partial class MapPage : ContentPage
 {
-    private readonly LocationService _locationService;
-    private readonly AdventureService _adventureService;
+    private LocationService? _locationService;
+    private AdventureService? _adventureService;
     private Polyline _routeLine;
 
-    public MapPage(LocationService locationService, AdventureService adventureService)
+    public MapPage()
     {
         try
         {
             InitializeComponent();
-            _locationService = locationService;
-            _adventureService = adventureService;
-            BindingContext = _adventureService.CurrentAdventure;
-            
             // Initialize route line safely
             _routeLine = new Polyline 
             { 
@@ -34,12 +30,6 @@ public partial class MapPage : ContentPage
             {
                 AdventureMap.MapElements.Add(_routeLine);
             }
-            
-            // Subscribe to waypoints changes safely
-            if (_adventureService?.CurrentAdventure?.Waypoints != null)
-            {
-                _adventureService.CurrentAdventure.Waypoints.CollectionChanged += OnWaypointsChanged;
-            }
         }
         catch (Exception ex)
         {
@@ -47,6 +37,29 @@ public partial class MapPage : ContentPage
             // Ensure we have a valid state even if initialization fails
             _routeLine = new Polyline { StrokeColor = Colors.Blue, StrokeWidth = 5 };
         }
+    }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        try
+        {
+            var sp = Handler?.MauiContext?.Services;
+            _locationService ??= sp?.GetService<LocationService>();
+            _adventureService ??= sp?.GetService<AdventureService>();
+
+            if (BindingContext == null)
+            {
+                BindingContext = _adventureService?.CurrentAdventure;
+            }
+
+            if (_adventureService?.CurrentAdventure?.Waypoints != null)
+            {
+                _adventureService.CurrentAdventure.Waypoints.CollectionChanged -= OnWaypointsChanged;
+                _adventureService.CurrentAdventure.Waypoints.CollectionChanged += OnWaypointsChanged;
+            }
+        }
+        catch { }
     }
 
     private void OnWaypointsChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -86,14 +99,17 @@ public partial class MapPage : ContentPage
     private async void OnStartClicked(object sender, EventArgs e)
     {
         // Check if we need to start a new adventure
-        if (!_adventureService.HasCurrentAdventure)
+        if (_adventureService == null || !_adventureService.HasCurrentAdventure)
         {
             var adventureName = await DisplayPromptAsync("New Adventure", "Enter a name for your adventure:", "Start", "Cancel");
             if (!string.IsNullOrWhiteSpace(adventureName))
             {
-                await _adventureService.StartNewAdventureAsync(adventureName);
-                // Save the adventure to get an ID
-                await _adventureService.SaveCurrentAdventureAsync();
+                if (_adventureService != null)
+                {
+                    await _adventureService.StartNewAdventureAsync(adventureName);
+                    // Save the adventure to get an ID
+                    await _adventureService.SaveCurrentAdventureAsync();
+                }
             }
             else
             {
@@ -101,12 +117,22 @@ public partial class MapPage : ContentPage
             }
         }
         
-        await _locationService.StartTrackingAsync(_adventureService.CurrentAdventure.Waypoints);
+        if (_locationService != null && _adventureService != null)
+        {
+            var waypoints = _adventureService.CurrentAdventure?.Waypoints;
+            if (waypoints != null)
+            {
+                await _locationService.StartTrackingAsync(waypoints);
+            }
+        }
     }
 
     private async void OnStopClicked(object sender, EventArgs e)
     {
-        await _locationService.StopTrackingAsync();
+        if (_locationService != null)
+        {
+            await _locationService.StopTrackingAsync();
+        }
     }
 
     private async void OnPhotoClicked(object sender, EventArgs e)
@@ -116,7 +142,7 @@ public partial class MapPage : ContentPage
             var photo = await MediaPicker.Default.CapturePhotoAsync();
             if (photo != null)
             {
-                var waypoint = _adventureService.CurrentAdventure.Waypoints.LastOrDefault();
+                var waypoint = _adventureService?.CurrentAdventure.Waypoints.LastOrDefault();
                 if (waypoint != null) waypoint.MediaUri = photo.FullPath;
             }
         }

@@ -29,13 +29,38 @@
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
-		<AndroidTargetSdkVersion>28</AndroidTargetSdkVersion>
-		<AndroidMinSdkVersion>21</AndroidMinSdkVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
+		<AndroidTargetSdkVersion>35</AndroidTargetSdkVersion>
+		<AndroidMinSdkVersion>24</AndroidMinSdkVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 	</PropertyGroup>
+
+	<!-- Android-specific build settings -->
+	<PropertyGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android'">
+		<!-- Disable AOT to avoid precompilation errors on build/publish -->
+		<RunAOTCompilation>false</RunAOTCompilation>
+		<AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+		<PublishAot>false</PublishAot>
+		<UseLLVM>false</UseLLVM>
+		<!-- Disable trimming/linking in Release to avoid reflection-heavy libs (EF Core) being removed -->
+		<PublishTrimmed Condition="'$(Configuration)' == 'Release'">false</PublishTrimmed>
+		<AndroidLinkMode Condition="'$(Configuration)' == 'Release'">None</AndroidLinkMode>
+		<!-- Google Maps API Key from environment variable -->
+		<GoogleMapsApiKey Condition="'$(GOOGLE_MAPS_API_KEY)' != ''">$(GOOGLE_MAPS_API_KEY)</GoogleMapsApiKey>
+		<GoogleMapsApiKey Condition="'$(GOOGLE_MAPS_API_KEY)' == ''">YOUR_GOOGLE_MAPS_API_KEY_HERE</GoogleMapsApiKey>
+	</PropertyGroup>
+
+	<!-- Replace Google Maps API Key in strings.xml during build -->
+	<Target Name="UpdateGoogleMapsApiKey" BeforeTargets="Build" Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android'">
+		<ItemGroup>
+			<GoogleMapsKeyFile Include="Platforms/Android/Resources/values/strings.xml" />
+		</ItemGroup>
+		<WriteLinesToFile File="@(GoogleMapsKeyFile)" 
+		                  Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xD;&#xA;&lt;resources&gt;&#xD;&#xA;    &lt;string name=&quot;google_maps_key&quot;&gt;$(GoogleMapsApiKey)&lt;/string&gt;&#xD;&#xA;&lt;/resources&gt;" 
+		                  Overwrite="true" />
+	</Target>
     
 	
 	
@@ -65,14 +90,11 @@
 		<PackageReference Include="Microsoft.Maui.Controls.Maps" Version="9.0.110" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0" />
+		<!-- Ensure SQLite native library is bundled for Android/iOS -->
+		<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.10" />
 		<!-- Enhanced Features -->
 		<PackageReference Include="CommunityToolkit.Maui" Version="8.0.0" />
-		<PackageReference Include="CommunityToolkit.Maui.Media" Version="8.0.0" />
-		<PackageReference Include="CommunityToolkit.Maui.Storage" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiVersion)" />
-		<PackageReference Include="Plugin.AudioRecorder" Version="2.0.0" />
-		<PackageReference Include="Plugin.Media" Version="5.0.1" />
-		<PackageReference Include="Xamarin.Essentials" Version="1.7.3" />
 	</ItemGroup>
 
 </Project>

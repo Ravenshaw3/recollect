@@ -55,6 +55,18 @@ public class DataService
         }
     }
 
+    public async Task<Adventure> CreateAdventureAsync(string name)
+    {
+        var adv = new Adventure
+        {
+            Name = string.IsNullOrWhiteSpace(name) ? "Unnamed Adventure" : name,
+            CreatedAt = DateTime.Now
+        };
+        _context.Adventures.Add(adv);
+        await _context.SaveChangesAsync();
+        return adv;
+    }
+
     // Waypoint operations
     public async Task<Waypoint> SaveWaypointAsync(Waypoint waypoint)
     {

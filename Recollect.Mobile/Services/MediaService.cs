@@ -76,11 +76,26 @@ public class MediaService
     {
         try
         {
-            var result = await MediaPicker.Default.PickPhotoAsync();
+            // Use FilePicker to avoid runtime media permission requirements on newer Android
+            var imageTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+            {
+                { DevicePlatform.Android, new[] { "image/*" } },
+                { DevicePlatform.iOS, new[] { "public.image" } },
+                { DevicePlatform.WinUI, new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" } },
+                { DevicePlatform.MacCatalyst, new[] { "public.image" } }
+            });
+
+            var result = await FilePicker.Default.PickAsync(new PickOptions
+            {
+                PickerTitle = "Select a photo",
+                FileTypes = imageTypes
+            });
+
             return result;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"Gallery pick error: {ex.Message}");
             return null;
         }
     }

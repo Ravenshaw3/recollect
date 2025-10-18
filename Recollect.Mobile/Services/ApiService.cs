@@ -82,6 +82,32 @@ public class ApiService
             return false;
         }
     }
+
+    public async Task<bool> UploadAudioAsync(int adventureId, Stream audioStream, string fileName, double? latitude = null, double? longitude = null, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var form = new MultipartFormDataContent();
+            var streamContent = new StreamContent(audioStream);
+            // Let server detect; fallback to generic audio
+            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/*");
+            form.Add(streamContent, name: "file", fileName: fileName);
+
+            // Backend endpoint path
+            var url = "/api/media/audio";
+            // Optional context as headers (if needed later)
+            if (latitude.HasValue) form.Headers.Add("X-Latitude", latitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            if (longitude.HasValue) form.Headers.Add("X-Longitude", longitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            form.Headers.Add("X-AdventureId", adventureId.ToString());
+
+            var response = await http.PostAsync(url, form, cancellationToken);
+            return response.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException)
+        {
+            return false;
+        }
+    }
 }
 
 public class ApiResponse

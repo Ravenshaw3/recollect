@@ -9,7 +9,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add CORS
+// Add CORS with security
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -17,6 +17,20 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin()
               .AllowAnyMethod()
               .AllowAnyHeader();
+    });
+    
+    // Production CORS policy for internet access
+    options.AddPolicy("Production", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:7001",
+                "https://localhost:7001",
+                "http://127.0.0.1:7001",
+                "https://127.0.0.1:7001"
+              )
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 
@@ -36,8 +50,21 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowAll");
-app.UseHttpsRedirection();
+// Use appropriate CORS policy based on environment
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("AllowAll");
+}
+else
+{
+    app.UseCors("Production");
+}
+
+// Only redirect to HTTPS in production
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 // Serve static files for admin interface
 app.UseDefaultFiles();

@@ -35,7 +35,7 @@ Copy-Item "./bin/Release/net9.0-android/publish/com.companyname.recollect.mobile
 Copy-Item "./bin/Release/net9.0-android/publish/com.companyname.recollect.mobile-Signed.apk" -Destination "$publishDir/com.companyname.recollect.mobile-Enhanced-Signed.apk"
 
 # Create enhanced README
-$enhancedReadme = @"
+$enhancedReadme = @'
 # 📱 Recollect Mobile - Enhanced Edition
 
 ## 🎉 **New Features Added!**
@@ -100,7 +100,7 @@ $enhancedReadme = @"
 ## 🚀 **Ready to Adventure!**
 
 Your enhanced Recollect mobile app is ready with all the coolest features!
-"@
+'@
 
 Set-Content -Path "$publishDir/README.md" -Value $enhancedReadme
 

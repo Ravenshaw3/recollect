@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- SDK Configuration for Samsung S10 compatibility -->
-    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="28" />
+    <!-- SDK Configuration aligned with project csproj -->
+    <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="35" />
     
     <!-- Permissions -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -11,6 +11,10 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- Android 13+ granular media permissions -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     
     <!-- Camera feature -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
@@ -23,11 +27,10 @@
     <application 
         android:allowBackup="true" 
         android:icon="@mipmap/appicon" 
-        android:roundIcon="@mipmap/appicon_round" 
         android:supportsRtl="true"
         android:requestLegacyExternalStorage="true"
         android:hardwareAccelerated="true">
-        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyDRS6C4eFekvkGphSVRhqQ9BIaurgsd_qs" />
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="@string/google_maps_key" />
         <activity android:name=".MainActivity" 
                   android:exported="true"
                   android:launchMode="singleTop"

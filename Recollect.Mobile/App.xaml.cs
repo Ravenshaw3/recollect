@@ -15,7 +15,8 @@ public partial class App : Application
     {
         try
         {
-            // Minimal startup - no database initialization
+            // Initialize database for full functionality
+            _ = Task.Run(InitializeDatabaseAsync);
             return new Window(new AppShell());
         }
         catch (Exception ex)

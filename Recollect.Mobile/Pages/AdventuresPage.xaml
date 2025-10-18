@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Recollect.Mobile.Pages.AdventuresPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Adventures">
+    <Grid RowDefinitions="Auto,*,Auto" Padding="10">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+            <SearchBar x:Name="SearchBar" Placeholder="Search adventures" TextChanged="OnSearchChanged"/>
+            <Button Grid.Column="1" Text="New" Clicked="OnCreateClicked" Margin="8,0,0,0"/>
+        </Grid>
+
+        <CollectionView Grid.Row="1" x:Name="AdventuresCollection"
+                        ItemsSource="{Binding Adventures}" SelectionMode="Single"
+                        SelectionChanged="OnSelectionChanged">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10" ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout>
+                            <Label Text="{Binding Name}" FontAttributes="Bold"/>
+                            <Label Text="{Binding CreatedAt}" FontSize="12" TextColor="Gray"/>
+                        </VerticalStackLayout>
+                        <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                            <Button Text="Select" Clicked="OnSelectClicked" CommandParameter="{Binding .}"/>
+                            <Button Text="Delete" Clicked="OnDeleteClicked" CommandParameter="{Binding .}"/>
+                        </HorizontalStackLayout>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Label Grid.Row="2" x:Name="StatusLabel" FontSize="12" TextColor="Gray"/>
+    </Grid>
+</ContentPage>
+

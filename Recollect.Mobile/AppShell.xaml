@@ -8,6 +8,7 @@
     Title="Recollect">
 
     <TabBar>
+        <ShellContent Title="Adventures" Icon="map.png" Route="AdventuresPage" ContentTemplate="{DataTemplate pages:AdventuresPage}" />
         <ShellContent Title="Map" Icon="map.png" Route="MapPage" ContentTemplate="{DataTemplate pages:MapPage}" />
         <ShellContent Title="Media" Icon="camera.png" Route="MediaPage" ContentTemplate="{DataTemplate pages:MediaPage}" />
         <ShellContent Title="Notes" Icon="note.png" Route="NotesPage" ContentTemplate="{DataTemplate pages:NotesPage}" />

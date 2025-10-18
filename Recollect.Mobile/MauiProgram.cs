@@ -45,8 +45,10 @@ public static class MauiProgram
             client.BaseAddress = new Uri(baseUrl);
             client.Timeout = TimeSpan.FromSeconds(30);
         });
+        builder.Services.AddSingleton<UploadQueueService>();
 
         // Feature pages
+        builder.Services.AddTransient<Pages.AdventuresPage>();
         builder.Services.AddTransient<Pages.MapPage>();
         builder.Services.AddTransient<Pages.MediaPage>();
         builder.Services.AddTransient<Pages.NotesPage>();

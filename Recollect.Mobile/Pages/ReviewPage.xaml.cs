@@ -3,12 +3,15 @@ using Microsoft.Maui.Controls.Maps;
 using Recollect.Mobile.Models;
 using Recollect.Mobile.Services;
 using System.Collections.ObjectModel;
+using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 
 namespace Recollect.Mobile.Pages;
 
 public partial class ReviewPage : ContentPage
 {
     private ApiService? _apiService;
+    private UploadQueueService? _uploadQueue;
     private AdventureService? _adventureService;
 
     public string AdventureName { get; set; } = "My Adventure";
@@ -26,13 +29,33 @@ public partial class ReviewPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        if (_apiService == null || _adventureService == null)
+        if (_apiService == null || _adventureService == null || _uploadQueue == null)
         {
             var sp = Handler?.MauiContext?.Services;
             _apiService ??= sp?.GetService<ApiService>();
             _adventureService ??= sp?.GetService<AdventureService>();
+            _uploadQueue ??= sp?.GetService<UploadQueueService>();
+        }
+        if (_adventureService != null)
+        {
+            _adventureService.CurrentAdventureChanged -= OnCurrentAdventureChanged;
+            _adventureService.CurrentAdventureChanged += OnCurrentAdventureChanged;
         }
         LoadAdventureData();
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        if (_adventureService != null)
+        {
+            _adventureService.CurrentAdventureChanged -= OnCurrentAdventureChanged;
+        }
+    }
+
+    private void OnCurrentAdventureChanged()
+    {
+        MainThread.BeginInvokeOnMainThread(LoadAdventureData);
     }
 
     private void LoadAdventureData()
@@ -85,17 +108,24 @@ public partial class ReviewPage : ContentPage
     {
         try
         {
-            if (_apiService != null && _adventureService?.CurrentAdventure != null)
+            if (_uploadQueue != null && _adventureService?.CurrentAdventure != null)
             {
-                var success = await _apiService.UploadAdventureAsync(_adventureService.CurrentAdventure);
-                if (success)
+                var adventure = _adventureService.CurrentAdventure;
+                var toast = Toast.Make($"Uploading '{adventure.Name}'...", ToastDuration.Short);
+                await toast.Show();
+                _uploadQueue.EnqueueAdventureUpload(adventure);
+
+                void Handler(string status)
                 {
-                    await DisplayAlert("Success", "Adventure uploaded to server!", "OK");
+                    MainThread.BeginInvokeOnMainThread(async () =>
+                    {
+                        var t = Toast.Make(status, ToastDuration.Short);
+                        await t.Show();
+                    });
                 }
-                else
-                {
-                    await DisplayAlert("Error", "Failed to upload adventure. Please try again.", "OK");
-                }
+
+                _uploadQueue.StatusChanged -= Handler;
+                _uploadQueue.StatusChanged += Handler;
             }
             else
             {

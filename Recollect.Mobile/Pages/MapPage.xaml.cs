@@ -47,6 +47,11 @@ public partial class MapPage : ContentPage
             var sp = Handler?.MauiContext?.Services;
             _locationService ??= sp?.GetService<LocationService>();
             _adventureService ??= sp?.GetService<AdventureService>();
+            if (_adventureService != null)
+            {
+                _adventureService.CurrentAdventureChanged -= OnCurrentAdventureChanged;
+                _adventureService.CurrentAdventureChanged += OnCurrentAdventureChanged;
+            }
 
             if (BindingContext == null)
             {
@@ -60,6 +65,19 @@ public partial class MapPage : ContentPage
             }
         }
         catch { }
+    }
+
+    private void OnCurrentAdventureChanged()
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            BindingContext = _adventureService?.CurrentAdventure;
+            if (_adventureService?.CurrentAdventure?.Waypoints != null)
+            {
+                _adventureService.CurrentAdventure.Waypoints.CollectionChanged -= OnWaypointsChanged;
+                _adventureService.CurrentAdventure.Waypoints.CollectionChanged += OnWaypointsChanged;
+            }
+        });
     }
 
     private void OnWaypointsChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -132,6 +150,22 @@ public partial class MapPage : ContentPage
         if (_locationService != null)
         {
             await _locationService.StopTrackingAsync();
+        }
+    }
+
+    private async void OnPauseClicked(object sender, EventArgs e)
+    {
+        if (_locationService != null)
+        {
+            await _locationService.PauseTrackingAsync();
+        }
+    }
+
+    private async void OnResumeClicked(object sender, EventArgs e)
+    {
+        if (_locationService != null && _adventureService?.CurrentAdventure?.Waypoints != null)
+        {
+            await _locationService.ResumeTrackingAsync();
         }
     }
 

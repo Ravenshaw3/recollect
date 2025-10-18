@@ -13,9 +13,11 @@
         <maps:Map x:Name="AdventureMap" IsShowingUser="True" Grid.Row="0" />
     
         <StackLayout Grid.Row="1" Orientation="Horizontal" HorizontalOptions="Center" Margin="10">
-            <Button Text="Start Tracking" Clicked="OnStartClicked" Margin="5" />
-            <Button Text="Stop Tracking" Clicked="OnStopClicked" Margin="5" />
-            <Button Text="Snap Photo" Clicked="OnPhotoClicked" Margin="5" />
+            <Button Text="Start" Clicked="OnStartClicked" Margin="5" />
+            <Button Text="Pause" Clicked="OnPauseClicked" Margin="5" />
+            <Button Text="Resume" Clicked="OnResumeClicked" Margin="5" />
+            <Button Text="Stop" Clicked="OnStopClicked" Margin="5" />
+            <Button Text="Photo" Clicked="OnPhotoClicked" Margin="5" />
         </StackLayout>
     </Grid>  
 </ContentPage>

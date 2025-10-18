@@ -139,6 +139,49 @@ public class DataService
             .ToListAsync();
     }
 
+    // Offload: remove local media files and clear pointers to free storage
+    public async Task<int> OffloadAdventureMediaAsync(int adventureId)
+    {
+        var count = 0;
+        var mediaItems = await GetMediaItemsByAdventureIdAsync(adventureId);
+        foreach (var m in mediaItems)
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(m.FilePath) && File.Exists(m.FilePath))
+                {
+                    File.Delete(m.FilePath);
+                    count++;
+                }
+                if (!string.IsNullOrWhiteSpace(m.ThumbnailPath) && File.Exists(m.ThumbnailPath) && m.ThumbnailPath != m.FilePath)
+                {
+                    try { File.Delete(m.ThumbnailPath); } catch { /* ignore */ }
+                }
+                m.FilePath = string.Empty;
+                m.ThumbnailPath = string.Empty;
+                _context.MediaItems.Update(m);
+            }
+            catch
+            {
+                // ignore file IO failures; continue updating DB pointers
+                m.FilePath = string.Empty;
+                m.ThumbnailPath = string.Empty;
+                _context.MediaItems.Update(m);
+            }
+        }
+
+        // Clear waypoint media pointers
+        var waypoints = await _context.Waypoints.Where(w => w.AdventureId == adventureId && !string.IsNullOrEmpty(w.MediaUri)).ToListAsync();
+        foreach (var w in waypoints)
+        {
+            w.MediaUri = null;
+            _context.Waypoints.Update(w);
+        }
+
+        await _context.SaveChangesAsync();
+        return count;
+    }
+
     // Database initialization
     public async Task InitializeDatabaseAsync()
     {

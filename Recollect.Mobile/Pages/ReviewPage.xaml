@@ -82,6 +82,8 @@
                      Orientation="Horizontal" 
                      HorizontalOptions="Center" 
                      Margin="10">
+            <CheckBox x:Name="OffloadAfterUpload" />
+            <Label Text="Free local storage after upload" VerticalTextAlignment="Center" Margin="6,0,12,0" />
             <Button Text="Share Adventure" 
                     Clicked="OnShareClicked" 
                     Margin="5" />

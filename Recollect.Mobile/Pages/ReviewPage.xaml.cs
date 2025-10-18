@@ -115,13 +115,24 @@ public partial class ReviewPage : ContentPage
                 await toast.Show();
                 _uploadQueue.EnqueueAdventureUpload(adventure);
 
-                void Handler(string status)
+                async void Handler(string status)
                 {
-                    MainThread.BeginInvokeOnMainThread(async () =>
+                    var t = Toast.Make(status, ToastDuration.Short);
+                    await t.Show();
+                    if (status.Contains("complete", StringComparison.OrdinalIgnoreCase) && OffloadAfterUpload?.IsChecked == true)
                     {
-                        var t = Toast.Make(status, ToastDuration.Short);
-                        await t.Show();
-                    });
+                        // Free local storage
+                        try
+                        {
+                            if (Handler?.MauiContext?.Services?.GetService<DataService>() is DataService data)
+                            {
+                                var count = await data.OffloadAdventureMediaAsync(adventure.Id);
+                                var doneToast = Toast.Make($"Offloaded {count} file(s)", ToastDuration.Short);
+                                await doneToast.Show();
+                            }
+                        }
+                        catch { /* ignore offload errors */ }
+                    }
                 }
 
                 _uploadQueue.StatusChanged -= Handler;

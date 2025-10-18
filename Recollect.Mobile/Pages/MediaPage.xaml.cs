@@ -90,9 +90,12 @@ public partial class MediaPage : ContentPage
                         mediaItem.AdventureId = _adventureService.CurrentAdventure.Id;
                         await data.SaveMediaItemAsync(mediaItem);
                     }
-                    // Attach to a new waypoint with media context
-                    await _adventureService.AddWaypointAsync(0, 0, mediaUri: photo.FullPath);
-                    await _adventureService.SaveCurrentAdventureAsync();
+                    // Immediate incremental upload + optional offload handled in Review
+                    if (_apiService != null)
+                    {
+                        await using var s = await photo.OpenReadAsync();
+                        await _apiService.UploadPhotoAsync(_adventureService.CurrentAdventure.Id, s, System.IO.Path.GetFileName(photo.FullPath));
+                    }
                 }
             }
         }
@@ -131,8 +134,11 @@ public partial class MediaPage : ContentPage
                         mediaItem.AdventureId = _adventureService.CurrentAdventure.Id;
                         await data.SaveMediaItemAsync(mediaItem);
                     }
-                    await _adventureService.AddWaypointAsync(0, 0, mediaUri: video.FullPath);
-                    await _adventureService.SaveCurrentAdventureAsync();
+                    if (_apiService != null)
+                    {
+                        await using var s = await video.OpenReadAsync();
+                        await _apiService.UploadVideoAsync(_adventureService.CurrentAdventure.Id, s, System.IO.Path.GetFileName(video.FullPath));
+                    }
                 }
             }
         }
@@ -171,8 +177,14 @@ public partial class MediaPage : ContentPage
                         mediaItem.AdventureId = _adventureService.CurrentAdventure.Id;
                         await data.SaveMediaItemAsync(mediaItem);
                     }
-                    await _adventureService.AddWaypointAsync(0, 0, mediaUri: media.FullPath);
-                    await _adventureService.SaveCurrentAdventureAsync();
+                    if (_apiService != null)
+                    {
+                        await using var s = await media.OpenReadAsync();
+                        if (mediaItem.Type == MediaType.Video)
+                            await _apiService.UploadVideoAsync(_adventureService.CurrentAdventure.Id, s, System.IO.Path.GetFileName(media.FullPath));
+                        else
+                            await _apiService.UploadPhotoAsync(_adventureService.CurrentAdventure.Id, s, System.IO.Path.GetFileName(media.FullPath));
+                    }
                 }
             }
         }

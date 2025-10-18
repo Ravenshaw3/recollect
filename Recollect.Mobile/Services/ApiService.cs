@@ -94,11 +94,60 @@ public class ApiService
             form.Add(streamContent, name: "file", fileName: fileName);
 
             // Backend endpoint path
-            var url = "/api/media/audio";
+            var url = "/api/media/upload-audio";
             // Optional context as headers (if needed later)
-            if (latitude.HasValue) form.Headers.Add("X-Latitude", latitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            if (longitude.HasValue) form.Headers.Add("X-Longitude", longitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            form.Headers.Add("X-AdventureId", adventureId.ToString());
+            var query = new List<string> { $"adventureId={adventureId}" };
+            if (latitude.HasValue) query.Add($"lat={latitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+            if (longitude.HasValue) query.Add($"lng={longitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+            url += $"?{string.Join("&", query)}";
+
+            var response = await http.PostAsync(url, form, cancellationToken);
+            return response.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException)
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> UploadPhotoAsync(int adventureId, Stream stream, string fileName, double? latitude = null, double? longitude = null, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var form = new MultipartFormDataContent();
+            var streamContent = new StreamContent(stream);
+            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/*");
+            form.Add(streamContent, name: "file", fileName: fileName);
+
+            var url = "/api/media/upload-photo";
+            var query = new List<string> { $"adventureId={adventureId}" };
+            if (latitude.HasValue) query.Add($"lat={latitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+            if (longitude.HasValue) query.Add($"lng={longitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+            url += $"?{string.Join("&", query)}";
+
+            var response = await http.PostAsync(url, form, cancellationToken);
+            return response.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException)
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> UploadVideoAsync(int adventureId, Stream stream, string fileName, double? latitude = null, double? longitude = null, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var form = new MultipartFormDataContent();
+            var streamContent = new StreamContent(stream);
+            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("video/*");
+            form.Add(streamContent, name: "file", fileName: fileName);
+
+            var url = "/api/media/upload-video";
+            var query = new List<string> { $"adventureId={adventureId}" };
+            if (latitude.HasValue) query.Add($"lat={latitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+            if (longitude.HasValue) query.Add($"lng={longitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+            url += $"?{string.Join("&", query)}";
 
             var response = await http.PostAsync(url, form, cancellationToken);
             return response.IsSuccessStatusCode;

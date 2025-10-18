@@ -1,5 +1,6 @@
 using Recollect.Mobile.Models;
 using System.Collections.ObjectModel;
+using Microsoft.Maui.Storage;
 
 namespace Recollect.Mobile.Services;
 
@@ -7,6 +8,9 @@ public class AdventureService
 {
     private Adventure _currentAdventure = new();
     private readonly DataService? _dataService;
+    private const string CurrentAdventureIdKey = "current_adventure_id";
+
+    public event Action? CurrentAdventureChanged;
 
     public Adventure CurrentAdventure => _currentAdventure;
     public IReadOnlyList<Adventure> SavedAdventures { get; private set; } = new List<Adventure>();
@@ -33,6 +37,8 @@ public class AdventureService
             Name = string.IsNullOrWhiteSpace(name) ? "Unnamed Adventure" : name,
             Waypoints = new ObservableCollection<Waypoint>()
         };
+        Preferences.Set(CurrentAdventureIdKey, 0);
+        CurrentAdventureChanged?.Invoke();
         return Task.CompletedTask;
     }
 
@@ -40,20 +46,30 @@ public class AdventureService
     {
         if (adventure == null) return Task.CompletedTask;
         _currentAdventure = adventure;
+        Preferences.Set(CurrentAdventureIdKey, _currentAdventure.Id);
+        CurrentAdventureChanged?.Invoke();
         return Task.CompletedTask;
     }
 
     public async Task SaveCurrentAdventureAsync()
     {
-        if (!string.IsNullOrWhiteSpace(_currentAdventure.Name) && _currentAdventure.Waypoints.Count > 0 && _dataService != null)
+        if (!string.IsNullOrWhiteSpace(_currentAdventure.Name) && _dataService != null)
         {
             await _dataService.SaveAdventureAsync(_currentAdventure);
             await LoadSavedAdventuresAsync();
+            Preferences.Set(CurrentAdventureIdKey, _currentAdventure.Id);
         }
     }
 
     public async Task AddWaypointAsync(double latitude, double longitude, string? note = null, string? mediaUri = null)
     {
+        // Ensure the current adventure is persisted before adding waypoints
+        if (_currentAdventure.Id == 0 && _dataService != null && !string.IsNullOrWhiteSpace(_currentAdventure.Name))
+        {
+            await _dataService.SaveAdventureAsync(_currentAdventure);
+            Preferences.Set(CurrentAdventureIdKey, _currentAdventure.Id);
+        }
+
         var waypoint = new Waypoint
         {
             AdventureId = _currentAdventure.Id,
@@ -81,6 +97,7 @@ public class AdventureService
             {
                 await _dataService.SaveAdventureAsync(_currentAdventure);
             }
+            CurrentAdventureChanged?.Invoke();
         }
     }
 
@@ -92,15 +109,19 @@ public class AdventureService
         if (_currentAdventure.Id == adventureId)
         {
             _currentAdventure = new Adventure();
+            Preferences.Set(CurrentAdventureIdKey, 0);
+            CurrentAdventureChanged?.Invoke();
         }
     }
 
     public void ClearCurrentAdventure()
     {
         _currentAdventure = new Adventure();
+        Preferences.Set(CurrentAdventureIdKey, 0);
+        CurrentAdventureChanged?.Invoke();
     }
 
-    public bool HasCurrentAdventure => !string.IsNullOrWhiteSpace(_currentAdventure.Name) && _currentAdventure.Waypoints.Count > 0;
+    public bool HasCurrentAdventure => !string.IsNullOrWhiteSpace(_currentAdventure.Name);
 
     public async Task LoadSavedAdventuresAsync()
     {
@@ -114,11 +135,40 @@ public class AdventureService
             {
                 SavedAdventures = new List<Adventure>();
             }
+            var savedId = Preferences.Get(CurrentAdventureIdKey, 0);
+            if (savedId > 0)
+            {
+                var match = SavedAdventures.FirstOrDefault(a => a.Id == savedId);
+                if (match != null)
+                {
+                    _currentAdventure = match;
+                    CurrentAdventureChanged?.Invoke();
+                }
+            }
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Failed to load adventures: {ex.Message}");
             SavedAdventures = new List<Adventure>();
+        }
+    }
+
+    public async Task RestoreCurrentAdventureAsync()
+    {
+        var savedId = Preferences.Get(CurrentAdventureIdKey, 0);
+        if (savedId <= 0)
+        {
+            return;
+        }
+        if (SavedAdventures == null || SavedAdventures.Count == 0)
+        {
+            await LoadSavedAdventuresAsync();
+        }
+        var match = SavedAdventures.FirstOrDefault(a => a.Id == savedId);
+        if (match != null)
+        {
+            _currentAdventure = match;
+            CurrentAdventureChanged?.Invoke();
         }
     }
 }

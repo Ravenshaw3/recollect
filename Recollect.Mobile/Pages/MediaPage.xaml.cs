@@ -29,6 +29,35 @@ public partial class MediaPage : ContentPage
             _adventureService ??= sp?.GetService<AdventureService>();
             _apiService ??= sp?.GetService<ApiService>();
         }
+        if (_adventureService != null)
+        {
+            _adventureService.CurrentAdventureChanged -= OnCurrentAdventureChanged;
+            _adventureService.CurrentAdventureChanged += OnCurrentAdventureChanged;
+        }
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        if (_adventureService != null)
+        {
+            _adventureService.CurrentAdventureChanged -= OnCurrentAdventureChanged;
+        }
+    }
+
+    private void OnCurrentAdventureChanged()
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            // No page-level BindingContext, but actions depend on current adventure selection
+            StatusLabelSet($"Current: {_adventureService?.CurrentAdventure?.Name ?? "None"}");
+        });
+    }
+
+    private void StatusLabelSet(string message)
+    {
+        // Optional: if a StatusLabel is present in XAML in future revisions
+        // Safely ignore if not present to avoid null refs
     }
 
     private async void OnTakePhotoClicked(object sender, EventArgs e)
@@ -53,9 +82,18 @@ public partial class MediaPage : ContentPage
                 };
                 
                 MediaItems.Add(mediaItem);
-                var lastWaypoint = _adventureService?.CurrentAdventure?.Waypoints?.LastOrDefault();
-                if (lastWaypoint != null)
-                    lastWaypoint.MediaUri = photo.FullPath;
+                if (_adventureService?.CurrentAdventure != null)
+                {
+                    // Persist to adventure media table
+                    if (Handler?.MauiContext?.Services?.GetService<DataService>() is DataService data)
+                    {
+                        mediaItem.AdventureId = _adventureService.CurrentAdventure.Id;
+                        await data.SaveMediaItemAsync(mediaItem);
+                    }
+                    // Attach to a new waypoint with media context
+                    await _adventureService.AddWaypointAsync(0, 0, mediaUri: photo.FullPath);
+                    await _adventureService.SaveCurrentAdventureAsync();
+                }
             }
         }
         catch (Exception ex)
@@ -86,9 +124,16 @@ public partial class MediaPage : ContentPage
                 };
                 
                 MediaItems.Add(mediaItem);
-                var lastWaypoint = _adventureService?.CurrentAdventure?.Waypoints?.LastOrDefault();
-                if (lastWaypoint != null)
-                    lastWaypoint.MediaUri = video.FullPath;
+                if (_adventureService?.CurrentAdventure != null)
+                {
+                    if (Handler?.MauiContext?.Services?.GetService<DataService>() is DataService data)
+                    {
+                        mediaItem.AdventureId = _adventureService.CurrentAdventure.Id;
+                        await data.SaveMediaItemAsync(mediaItem);
+                    }
+                    await _adventureService.AddWaypointAsync(0, 0, mediaUri: video.FullPath);
+                    await _adventureService.SaveCurrentAdventureAsync();
+                }
             }
         }
         catch (Exception ex)
@@ -119,6 +164,16 @@ public partial class MediaPage : ContentPage
                 };
                 
                 MediaItems.Add(mediaItem);
+                if (_adventureService?.CurrentAdventure != null)
+                {
+                    if (Handler?.MauiContext?.Services?.GetService<DataService>() is DataService data)
+                    {
+                        mediaItem.AdventureId = _adventureService.CurrentAdventure.Id;
+                        await data.SaveMediaItemAsync(mediaItem);
+                    }
+                    await _adventureService.AddWaypointAsync(0, 0, mediaUri: media.FullPath);
+                    await _adventureService.SaveCurrentAdventureAsync();
+                }
             }
         }
         catch (Exception ex)

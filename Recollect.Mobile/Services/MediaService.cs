@@ -76,6 +76,13 @@ public class MediaService
     {
         try
         {
+            // Ensure proper permission on older Android
+            var hasPermission = await _permissionService.RequestMediaPickerPermissionsAsync();
+            if (!hasPermission)
+            {
+                System.Diagnostics.Debug.WriteLine("Media picker permission denied");
+                return null;
+            }
             // Use FilePicker to avoid runtime media permission requirements on newer Android
             var imageTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {

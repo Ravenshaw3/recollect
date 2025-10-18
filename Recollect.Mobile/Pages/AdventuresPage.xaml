@@ -16,7 +16,10 @@
                 <DataTemplate>
                     <Grid Padding="10" ColumnDefinitions="*,Auto">
                         <VerticalStackLayout>
-                            <Label Text="{Binding Name}" FontAttributes="Bold"/>
+                            <HorizontalStackLayout Spacing="6">
+                                <Entry Text="{Binding Name}" IsReadOnly="True" x:Name="NameEntry" WidthRequest="220"/>
+                                <Button Text="Rename" CommandParameter="{Binding .}" Clicked="OnRenameClicked" />
+                            </HorizontalStackLayout>
                             <Label Text="{Binding CreatedAt}" FontSize="12" TextColor="Gray"/>
                         </VerticalStackLayout>
                         <HorizontalStackLayout Grid.Column="1" Spacing="8">

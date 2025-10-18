@@ -4,6 +4,9 @@ namespace Recollect.Mobile.Services;
 
 public class PermissionService
 {
+    private static bool IsAndroid => DeviceInfo.Platform == DevicePlatform.Android;
+    private static int AndroidVersion => IsAndroid ? DeviceInfo.Version.Major : 0;
+
     public async Task<bool> RequestLocationPermissionAsync()
     {
         try
@@ -52,16 +55,18 @@ public class PermissionService
     {
         try
         {
-            // For Android 9 and below, we need to request storage permission
-            if (DeviceInfo.Platform == DevicePlatform.Android)
+            // For Android 12 and below, request storage permissions
+            if (IsAndroid && AndroidVersion <= 12)
             {
-                var status = await Permissions.CheckStatusAsync<Permissions.StorageWrite>();
+                var read = await Permissions.CheckStatusAsync<Permissions.StorageRead>();
+                var write = await Permissions.CheckStatusAsync<Permissions.StorageWrite>();
                 
-                if (status == PermissionStatus.Granted)
+                if (read == PermissionStatus.Granted && write == PermissionStatus.Granted)
                     return true;
                     
-                status = await Permissions.RequestAsync<Permissions.StorageWrite>();
-                return status == PermissionStatus.Granted;
+                read = await Permissions.RequestAsync<Permissions.StorageRead>();
+                write = await Permissions.RequestAsync<Permissions.StorageWrite>();
+                return read == PermissionStatus.Granted && write == PermissionStatus.Granted;
             }
             
             return true; // iOS handles this differently
@@ -72,13 +77,37 @@ public class PermissionService
             return false;
         }
     }
+
+    // For gallery/media picker access
+    public async Task<bool> RequestMediaPickerPermissionsAsync()
+    {
+        try
+        {
+            // Android 13+ uses scoped media picker; no runtime permission needed
+            if (IsAndroid && AndroidVersion >= 13)
+            {
+                return true;
+            }
+            // Older Android needs storage read
+            var read = await Permissions.CheckStatusAsync<Permissions.StorageRead>();
+            if (read == PermissionStatus.Granted) return true;
+            read = await Permissions.RequestAsync<Permissions.StorageRead>();
+            return read == PermissionStatus.Granted;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Media picker permission error: {ex.Message}");
+            return false;
+        }
+    }
     
     public async Task<bool> RequestAllPermissionsAsync()
     {
         var location = await RequestLocationPermissionAsync();
         var camera = await RequestCameraPermissionAsync();
         var storage = await RequestStoragePermissionAsync();
+        var mediaPicker = await RequestMediaPickerPermissionsAsync();
         
-        return location && camera && storage;
+        return location && camera && storage && mediaPicker;
     }
 }

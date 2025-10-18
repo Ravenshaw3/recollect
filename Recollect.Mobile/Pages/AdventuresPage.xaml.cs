@@ -89,6 +89,19 @@ public partial class AdventuresPage : ContentPage
         }
         StatusLabel.Text = $"{Adventures.Count} match(es)";
     }
+
+    private async void OnRenameClicked(object sender, EventArgs e)
+    {
+        if (_adventureService == null) return;
+        if ((sender as Button)?.CommandParameter is Adventure adv)
+        {
+            var newName = await DisplayPromptAsync("Rename Adventure", "Enter new name:", initialValue: adv.Name);
+            if (string.IsNullOrWhiteSpace(newName)) return;
+            await _adventureService.SetCurrentAdventureAsync(adv);
+            await _adventureService.UpdateAdventureNameAsync(newName.Trim());
+            await LoadAdventuresAsync();
+        }
+    }
 }
 
 

@@ -4,19 +4,15 @@ services:
     build: 
       context: ./Recollect.Api
       dockerfile: Dockerfile.dockerfile
-    ports:
-      - "7001:80"
+    # Use host network for Tailscale access (remove ports & networks when using host)
+    network_mode: "host"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=Host=db;Database=Recollect;Username=postgres;Password=secret
+      - ASPNETCORE_URLS=http://+:7001
+      - ConnectionStrings__DefaultConnection=Host=127.0.0.1;Database=Recollect;Username=postgres;Password=secret
     depends_on:
       - db
     restart: unless-stopped
-    networks:
-      - recollect-network
-    # Use host network for Tailscale access
-    network_mode: "host"
   db:
     image: postgres:16
     environment:
@@ -26,6 +22,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+    # Keep db on bridge network
     networks:
       - recollect-network
 

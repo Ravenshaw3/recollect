@@ -96,8 +96,7 @@ public partial class NotesPage : ContentPage
             if (pick == null) return;
 
             await using var stream = await pick.OpenReadAsync();
-            if (Handler?.MauiContext?.Services?.GetService<ApiService>() is ApiService api &&
-                Handler.MauiContext.Services.GetService<AdventureService>() is AdventureService adv)
+            if (Handler?.MauiContext?.Services?.GetService<AdventureService>() is AdventureService adv)
             {
                 var adventureId = adv.CurrentAdventure?.Id ?? 0;
                 if (adventureId <= 0)
@@ -105,8 +104,21 @@ public partial class NotesPage : ContentPage
                     await DisplayAlert("No Adventure", "Start an adventure first.", "OK");
                     return;
                 }
-                var ok = await api.UploadAudioAsync(adventureId, stream, pick.FileName);
-                await DisplayAlert(ok ? "Uploaded" : "Error", ok ? "Voice note uploaded" : "Upload failed", "OK");
+                // Save locally as media item; upload from Review per user selection
+                if (Handler?.MauiContext?.Services?.GetService<DataService>() is DataService data)
+                {
+                    var item = new MediaItem
+                    {
+                        AdventureId = adventureId,
+                        FilePath = pick.FullPath,
+                        ThumbnailPath = pick.FullPath,
+                        Caption = "Voice note",
+                        Type = MediaType.Audio,
+                        Timestamp = DateTime.Now
+                    };
+                    await data.SaveMediaItemAsync(item);
+                    await DisplayAlert("Saved", "Voice note added. Upload from Review.", "OK");
+                }
             }
         }
         catch (Exception ex)

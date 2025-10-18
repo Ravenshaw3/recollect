@@ -16,5 +16,6 @@ public class MediaItem
 public enum MediaType
 {
     Photo,
-    Video
+    Video,
+    Audio
 }

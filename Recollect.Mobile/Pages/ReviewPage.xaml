@@ -96,6 +96,7 @@
                     <Label Text="Waypoints" Grid.Row="4" Grid.Column="1" VerticalTextAlignment="Center"/>
                 </Grid>
                 <Button Text="Upload Selected Now" Clicked="OnUploadSelectedClicked" Margin="0,8,0,0"/>
+                <Button Text="Finalize Adventure" Clicked="OnFinalizeClicked" Margin="0,4,0,0"/>
             </VerticalStackLayout>
         </Frame>
 

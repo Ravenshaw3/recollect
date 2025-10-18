@@ -185,7 +185,7 @@ public partial class ReviewPage : ContentPage
                 }
             }
 
-            // Photos/Videos
+            // Photos/Videos/Audio
             if (Handler?.MauiContext?.Services?.GetService<DataService>() is DataService mediaData)
             {
                 var items = await mediaData.GetMediaItemsByAdventureIdAsync(adv.Id);
@@ -193,8 +193,11 @@ public partial class ReviewPage : ContentPage
                 {
                     if (string.IsNullOrEmpty(m.FilePath)) continue; // already offloaded
                     var isVideo = m.Type == MediaType.Video;
+                    var isPhoto = m.Type == MediaType.Photo;
+                    var isAudio = m.Type == MediaType.Audio;
                     if (isVideo && UploadVideos?.IsChecked != true) continue;
-                    if (!isVideo && UploadPhotos?.IsChecked != true) continue;
+                    if (isPhoto && UploadPhotos?.IsChecked != true) continue;
+                    if (isAudio && UploadVoice?.IsChecked != true) continue;
 
                     try
                     {
@@ -202,7 +205,9 @@ public partial class ReviewPage : ContentPage
                         var fileName = Path.GetFileName(m.FilePath);
                         var ok = isVideo
                             ? await _apiService.UploadVideoAsync(adv.Id, s, fileName)
-                            : await _apiService.UploadPhotoAsync(adv.Id, s, fileName);
+                            : isPhoto
+                                ? await _apiService.UploadPhotoAsync(adv.Id, s, fileName)
+                                : await _apiService.UploadAudioAsync(adv.Id, s, fileName);
                         if (ok) uploaded++;
                     }
                     catch { }
@@ -223,6 +228,44 @@ public partial class ReviewPage : ContentPage
                 var count = await dataSvc.OffloadAdventureMediaAsync(adv.Id);
                 var off = Toast.Make($"Offloaded {count} file(s)", ToastDuration.Short);
                 await off.Show();
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Error", ex.Message, "OK");
+        }
+    }
+
+    private async void OnFinalizeClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            // Upload all types
+            UploadPhotos.IsChecked = true;
+            UploadVideos.IsChecked = true;
+            UploadVoice.IsChecked = true;
+            UploadNotes.IsChecked = true;
+            UploadWaypoints.IsChecked = true;
+            await Task.Yield();
+            await Task.Run(() => { });
+            OnUploadSelectedClicked(sender, e);
+
+            // After upload, offload and clear local adventure
+            if (_adventureService?.CurrentAdventure != null)
+            {
+                if (Handler?.MauiContext?.Services?.GetService<DataService>() is DataService data)
+                {
+                    var advId = _adventureService.CurrentAdventure.Id;
+                    if (OffloadAfterUpload?.IsChecked != true)
+                    {
+                        // Offload anyway for finalize
+                        var _ = await data.OffloadAdventureMediaAsync(advId);
+                    }
+                    // Remove local adventure record
+                    await data.DeleteAdventureAsync(advId);
+                }
+                _adventureService.ClearCurrentAdventure();
+                await DisplayAlert("Finalized", "Adventure uploaded and removed locally.", "OK");
             }
         }
         catch (Exception ex)

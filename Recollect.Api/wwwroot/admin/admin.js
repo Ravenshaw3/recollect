@@ -613,6 +613,39 @@ function refreshAdventures() {
     loadAdventures();
 }
 
+function openCreateAdventureModal() {
+    const modal = new bootstrap.Modal(document.getElementById('createAdventureModal'));
+    document.getElementById('createAdventureName').value = '';
+    modal.show();
+}
+
+async function createAdventure() {
+    try {
+        const name = (document.getElementById('createAdventureName').value || '').trim();
+        if (!name) {
+            showError('Please enter a name');
+            return;
+        }
+        const response = await fetch(`${API_BASE}/adventures/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        });
+        if (response.ok) {
+            showSuccess('Adventure created');
+            bootstrap.Modal.getInstance(document.getElementById('createAdventureModal')).hide();
+            loadAdventures();
+            loadDashboard();
+        } else {
+            const error = await response.json();
+            showError(error.Error || 'Failed to create adventure');
+        }
+    } catch (err) {
+        console.error('Create adventure error:', err);
+        showError('Failed to connect to server');
+    }
+}
+
 // Story Generator Functions
 async function loadStoryAdventures() {
     try {

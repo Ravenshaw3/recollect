@@ -140,7 +140,9 @@ public partial class MapPage : ContentPage
             var waypoints = _adventureService.CurrentAdventure?.Waypoints;
             if (waypoints != null)
             {
-                await _locationService.StartTrackingAsync(waypoints);
+                var api = Handler?.MauiContext?.Services?.GetService<ApiService>();
+                var advId = _adventureService.CurrentAdventure?.Id ?? 0;
+                await _locationService.StartTrackingAsync(waypoints, api, advId);
             }
         }
     }

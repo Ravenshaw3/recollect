@@ -17,7 +17,7 @@ public class LocationService
     private static readonly TimeSpan MinInterval = TimeSpan.FromSeconds(10);
     private const double MinDistanceMeters = 20; // ~20m
 
-    public async Task StartTrackingAsync(ObservableCollection<Waypoint> waypoints)
+    public async Task StartTrackingAsync(ObservableCollection<Waypoint> waypoints, ApiService? apiService = null, int adventureId = 0)
     {
         var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
         if (status != PermissionStatus.Granted)
@@ -29,7 +29,7 @@ public class LocationService
         _activeWaypoints = waypoints;
         _isPaused = false;
 
-        _locationHandler = (s, e) =>
+        _locationHandler = async (s, e) =>
         {
             if (_isPaused || _activeWaypoints == null) return;
 
@@ -52,12 +52,20 @@ public class LocationService
                 }
             }
 
-            _activeWaypoints.Add(new Waypoint
+            var newWp = new Waypoint
             {
                 Latitude = current.Latitude,
                 Longitude = current.Longitude,
                 Timestamp = DateTime.Now
-            });
+            };
+
+            _activeWaypoints.Add(newWp);
+
+            // Push to server incrementally when possible
+            if (apiService != null && adventureId > 0)
+            {
+                try { await apiService.AddWaypointAsync(adventureId, newWp); } catch { /* best-effort */ }
+            }
 
             _lastAddedUtc = nowUtc;
             _lastLocation = current;

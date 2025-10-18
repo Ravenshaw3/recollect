@@ -52,6 +52,34 @@ public class ApiService
         }
     }
 
+    public async Task<bool> AddNoteAsync(int adventureId, Note note, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var url = $"/api/notes?adventureId={adventureId}";
+            var response = await http.PostAsJsonAsync(url, note, cancellationToken);
+            return response.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException)
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> AddWaypointAsync(int adventureId, Waypoint waypoint, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var url = $"/api/waypoints?adventureId={adventureId}";
+            var response = await http.PostAsJsonAsync(url, waypoint, cancellationToken);
+            return response.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException)
+        {
+            return false;
+        }
+    }
+
     public async Task<Adventure?> GetAdventureAsync(int id, CancellationToken cancellationToken = default)
     {
         try

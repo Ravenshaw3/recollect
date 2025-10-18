@@ -7,7 +7,7 @@ namespace Recollect.Mobile.Pages;
 
 public partial class NotesPage : ContentPage
 {
-    private readonly AdventureService? _adventureService;
+    private AdventureService? _adventureService;
     public ObservableCollection<Note> Notes { get; set; } = new();
 
     public NotesPage(AdventureService? adventureService = null)
@@ -15,6 +15,34 @@ public partial class NotesPage : ContentPage
         InitializeComponent();
         _adventureService = adventureService;
         BindingContext = this;
+    }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        _adventureService ??= Handler?.MauiContext?.Services?.GetService<AdventureService>();
+        if (_adventureService != null)
+        {
+            _adventureService.CurrentAdventureChanged -= OnCurrentAdventureChanged;
+            _adventureService.CurrentAdventureChanged += OnCurrentAdventureChanged;
+        }
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        if (_adventureService != null)
+        {
+            _adventureService.CurrentAdventureChanged -= OnCurrentAdventureChanged;
+        }
+    }
+
+    private void OnCurrentAdventureChanged()
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            // Update UI state if needed; bindings already point to page collection
+        });
     }
 
     private async void OnAddNoteClicked(object sender, EventArgs e)
@@ -39,6 +67,11 @@ public partial class NotesPage : ContentPage
                 if (_adventureService?.CurrentAdventure != null)
                 {
                     await _adventureService.SaveCurrentAdventureAsync();
+                    // Incremental upload
+                    if (Handler?.MauiContext?.Services?.GetService<ApiService>() is ApiService api)
+                    {
+                        await api.AddNoteAsync(_adventureService.CurrentAdventure.Id, note);
+                    }
                 }
             }
         }

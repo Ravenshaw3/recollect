@@ -79,11 +79,26 @@ app.MapGet("/admin", async context =>
 app.UseAuthorization();
 app.MapControllers();
 
-// Ensure database is created
+// Ensure database is created with simple retry to avoid crash on cold start
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AdventureDbContext>();
-    context.Database.EnsureCreated();
+    var attempts = 0;
+    const int maxAttempts = 10;
+    while (true)
+    {
+        try
+        {
+            context.Database.EnsureCreated();
+            break;
+        }
+        catch (Exception)
+        {
+            attempts++;
+            if (attempts >= maxAttempts) throw;
+            await Task.Delay(1000);
+        }
+    }
 }
 
 app.Run();

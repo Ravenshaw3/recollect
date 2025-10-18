@@ -148,4 +148,86 @@ public partial class ReviewPage : ContentPage
             await DisplayAlert("Error", $"Upload failed: {ex.Message}", "OK");
         }
     }
+
+    private async void OnUploadSelectedClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            if (_apiService == null || _adventureService?.CurrentAdventure == null)
+            {
+                await DisplayAlert("Error", "Services not available.", "OK");
+                return;
+            }
+
+            var adv = _adventureService.CurrentAdventure;
+            var uploaded = 0;
+
+            // Waypoints
+            if (UploadWaypoints?.IsChecked == true)
+            {
+                foreach (var w in adv.Waypoints)
+                {
+                    await _apiService.AddWaypointAsync(adv.Id, w);
+                }
+            }
+
+            // Notes
+            if (UploadNotes?.IsChecked == true)
+            {
+                if (Handler?.MauiContext?.Services?.GetService<DataService>() is DataService data)
+                {
+                    var notes = await data.GetNotesByAdventureIdAsync(adv.Id);
+                    foreach (var n in notes)
+                    {
+                        var ok = await _apiService.AddNoteAsync(adv.Id, n);
+                        if (ok) uploaded++;
+                    }
+                }
+            }
+
+            // Photos/Videos
+            if (Handler?.MauiContext?.Services?.GetService<DataService>() is DataService mediaData)
+            {
+                var items = await mediaData.GetMediaItemsByAdventureIdAsync(adv.Id);
+                foreach (var m in items)
+                {
+                    if (string.IsNullOrEmpty(m.FilePath)) continue; // already offloaded
+                    var isVideo = m.Type == MediaType.Video;
+                    if (isVideo && UploadVideos?.IsChecked != true) continue;
+                    if (!isVideo && UploadPhotos?.IsChecked != true) continue;
+
+                    try
+                    {
+                        await using var s = File.OpenRead(m.FilePath);
+                        var fileName = Path.GetFileName(m.FilePath);
+                        var ok = isVideo
+                            ? await _apiService.UploadVideoAsync(adv.Id, s, fileName)
+                            : await _apiService.UploadPhotoAsync(adv.Id, s, fileName);
+                        if (ok) uploaded++;
+                    }
+                    catch { }
+                }
+            }
+
+            // Voice notes
+            if (UploadVoice?.IsChecked == true)
+            {
+                // Already covered if stored in media; if not, leave for future extension
+            }
+
+            var toast = Toast.Make($"Uploaded {uploaded} item(s)", ToastDuration.Short);
+            await toast.Show();
+
+            if (OffloadAfterUpload?.IsChecked == true && Handler?.MauiContext?.Services?.GetService<DataService>() is DataService dataSvc)
+            {
+                var count = await dataSvc.OffloadAdventureMediaAsync(adv.Id);
+                var off = Toast.Make($"Offloaded {count} file(s)", ToastDuration.Short);
+                await off.Show();
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Error", ex.Message, "OK");
+        }
+    }
 }

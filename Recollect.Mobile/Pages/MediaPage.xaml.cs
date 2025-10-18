@@ -90,12 +90,7 @@ public partial class MediaPage : ContentPage
                         mediaItem.AdventureId = _adventureService.CurrentAdventure.Id;
                         await data.SaveMediaItemAsync(mediaItem);
                     }
-                    // Immediate incremental upload + optional offload handled in Review
-                    if (_apiService != null)
-                    {
-                        await using var s = await photo.OpenReadAsync();
-                        await _apiService.UploadPhotoAsync(_adventureService.CurrentAdventure.Id, s, System.IO.Path.GetFileName(photo.FullPath));
-                    }
+                    // Upload will be handled from Review via user-selected incremental upload
                 }
             }
         }
@@ -134,11 +129,7 @@ public partial class MediaPage : ContentPage
                         mediaItem.AdventureId = _adventureService.CurrentAdventure.Id;
                         await data.SaveMediaItemAsync(mediaItem);
                     }
-                    if (_apiService != null)
-                    {
-                        await using var s = await video.OpenReadAsync();
-                        await _apiService.UploadVideoAsync(_adventureService.CurrentAdventure.Id, s, System.IO.Path.GetFileName(video.FullPath));
-                    }
+                    // Upload will be handled from Review via user-selected incremental upload
                 }
             }
         }
@@ -177,14 +168,7 @@ public partial class MediaPage : ContentPage
                         mediaItem.AdventureId = _adventureService.CurrentAdventure.Id;
                         await data.SaveMediaItemAsync(mediaItem);
                     }
-                    if (_apiService != null)
-                    {
-                        await using var s = await media.OpenReadAsync();
-                        if (mediaItem.Type == MediaType.Video)
-                            await _apiService.UploadVideoAsync(_adventureService.CurrentAdventure.Id, s, System.IO.Path.GetFileName(media.FullPath));
-                        else
-                            await _apiService.UploadPhotoAsync(_adventureService.CurrentAdventure.Id, s, System.IO.Path.GetFileName(media.FullPath));
-                    }
+                    // Upload will be handled from Review via user-selected incremental upload
                 }
             }
         }

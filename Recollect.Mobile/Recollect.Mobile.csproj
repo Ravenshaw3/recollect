@@ -52,6 +52,20 @@
 		<GoogleMapsApiKey Condition="'$(GOOGLE_MAPS_API_KEY)' == ''">YOUR_GOOGLE_MAPS_API_KEY_HERE</GoogleMapsApiKey>
 	</PropertyGroup>
 
+	<!-- Speed up Debug Android builds: single ABI, fast deployment, shared runtime -->
+	<PropertyGroup Condition="'$(Configuration)' == 'Debug' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android'">
+		<AndroidSupportedAbis>arm64-v8a</AndroidSupportedAbis>
+		<AndroidFastDeployment>true</AndroidFastDeployment>
+		<AndroidUseSharedRuntime>true</AndroidUseSharedRuntime>
+		<Deterministic>false</Deterministic>
+	</PropertyGroup>
+
+	<!-- Smaller/consistent Release output: single ABI apk (size/build-time) -->
+	<PropertyGroup Condition="'$(Configuration)' == 'Release' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android'">
+		<AndroidSupportedAbis>arm64-v8a</AndroidSupportedAbis>
+		<AndroidPackageFormat>apk</AndroidPackageFormat>
+	</PropertyGroup>
+
 	<!-- Replace Google Maps API Key in strings.xml during build -->
 	<Target Name="UpdateGoogleMapsApiKey" BeforeTargets="Build" Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android'">
 		<ItemGroup>
